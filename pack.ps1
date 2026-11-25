@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = $PSScriptRoot
-$ArchiveName = "pulse-pos-deploy.tar.gz"
+$ArchiveName = "inovasi-pos-deploy.tar.gz"
 $ArchivePath = Join-Path $ProjectRoot $ArchiveName
 
 Write-Host "Packing project into $ArchiveName ..." -ForegroundColor Cyan
@@ -24,10 +24,7 @@ $excludes = @(
     "--exclude=playwright-report",
     "--exclude=uploads",
     "--exclude=backend/uploads",
-    "--exclude=omni-pos-core-deploy.tar.gz",
-    "--exclude=omni-pos-core-deploy-clean.tar.gz",
-    "--exclude=pulse-pos-deploy.tar.gz",
-    "--exclude=wrikmart-deploy-clean.tar.gz",
+    "--exclude=_ref-saas-portable",
     "--exclude=*.tar.gz",
     "--exclude=*.tgz",
     "--exclude=*.zip",
@@ -49,8 +46,4 @@ $tarArgs = $excludes + @("-czf", $ArchiveName, "-C", $ProjectRoot, ".")
 if ($LASTEXITCODE -ne 0) { throw "tar failed" }
 
 $size = (Get-Item $ArchivePath).Length / 1MB
-Write-Host "Archive ready: $ArchiveName ($([math]::Round($size,1)) MB)" -ForegroundColor Green
-
-# Also update omni-pos-core-deploy.tar.gz for compatibility
-Copy-Item $ArchivePath (Join-Path $ProjectRoot "omni-pos-core-deploy.tar.gz") -Force
-Write-Host "Synchronized omni-pos-core-deploy.tar.gz" -ForegroundColor Green
+Write-Host "Archive ready: $ArchivePath ($([math]::Round($size, 2)) MB)" -ForegroundColor Green
