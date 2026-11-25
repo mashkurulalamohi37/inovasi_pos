@@ -320,7 +320,7 @@ function LoginPage() {
                   )}
                 </Button>
                 <p className="mt-4 text-center text-xs text-muted-foreground">
-                  New to Inovasi POS?{" "}
+                  New to Inovasi Pos?{" "}
                   <button type="button" className="font-medium text-primary hover:underline" onClick={() => setSliderActive(true)}>
                     Create a workspace
                   </button>
@@ -398,7 +398,7 @@ function LoginPage() {
               <>
                 <h1 className="mb-1 font-display text-2xl font-bold">Create workspace</h1>
                 <p className="mb-3 text-center text-xs text-muted-foreground">
-                  Register your retail business on Inovasi POS SaaS
+                  Register your retail business on Inovasi Pos SaaS
                 </p>
                 <input className="auth-slide-input" placeholder="Company / store name" value={companyName} onChange={e => setCompanyName(e.target.value)} required />
                 <input className="auth-slide-input" placeholder="Your full name" value={adminName} onChange={e => setAdminName(e.target.value)} autoComplete="name" />

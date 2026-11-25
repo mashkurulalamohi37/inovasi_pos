@@ -142,7 +142,7 @@ function Overview() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
                 <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary text-xs mb-1.5">
-                  Welcome to Inovasi POS
+                  Welcome to Inovasi Pos
                 </Badge>
                 <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">Getting Started: 3 Steps to Your First Sale</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Follow these recommended steps to set up your store catalog and start ringing up orders.</p>

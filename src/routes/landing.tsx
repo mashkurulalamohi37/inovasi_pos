@@ -36,11 +36,11 @@ export const Route = createFileRoute("/landing")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "Inovasi POS — Enterprise Multi-Vertical Retail Platform" },
+      { title: "Inovasi Pos — Enterprise Multi-Vertical Retail Platform" },
       {
         name: "description",
         content:
-          "Inovasi POS by Inovasi Tech Pvt. Ltd. unifies pharmacy, fashion, grocery, restaurant, jewelry, and electronics operations on one modern platform.",
+          "Inovasi Pos by Inovasi Tech Pvt. Ltd. unifies pharmacy, fashion, grocery, restaurant, jewelry, and electronics operations on one modern platform.",
       },
     ],
   }),
@@ -272,7 +272,7 @@ function Landing() {
             </div>
             <div className="leading-none">
               <div className="font-display text-base font-bold tracking-tight text-foreground sm:text-lg">
-                Inovasi <span className="text-primary">POS</span>
+                Inovasi <span className="text-primary">Pos</span>
               </div>
               <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 by Inovasi Tech
@@ -338,7 +338,7 @@ function Landing() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]">
-              Inovasi POS unifies point-of-sale billing, inventory ledgers, purchasing, accounting, and
+              Inovasi Pos unifies point-of-sale billing, inventory ledgers, purchasing, accounting, and
               branch analytics across every retail vertical—engineered for speed, reliability, and effortless growth.
             </p>
 
@@ -385,7 +385,7 @@ function Landing() {
                     </div>
                     <div>
                       <div className="font-display text-xs font-semibold tracking-wide text-white">
-                        INOVASI POS TERMINAL
+                        Inovasi Pos Terminal
                       </div>
                       <div className="text-[11px] text-white/55">{activePack.sampleCounter}</div>
                     </div>
@@ -781,7 +781,7 @@ function Landing() {
                   Powered by Inovasi Tech Pvt. Ltd.
                 </div>
                 <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                  Ready to upgrade your stores with Inovasi POS?
+                  Ready to upgrade your stores with Inovasi Pos?
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-base">
                   Launch a multi-store workspace in minutes or sign in directly to test any vertical POS lane.
@@ -814,7 +814,7 @@ function Landing() {
                 </div>
                 <div>
                   <div className="font-display text-base font-bold text-foreground">
-                    Inovasi <span className="text-primary">POS</span>
+                    Inovasi <span className="text-primary">Pos</span>
                   </div>
                   <div className="text-xs text-muted-foreground">Inovasi Tech Pvt. Ltd.</div>
                 </div>

@@ -34,7 +34,7 @@ function TenantLogoMark({ name, logoUrl }: { name: string; logoUrl: string | nul
 
 export function TenantBrandingHeader({
   branding,
-  fallbackTitle = "Inovasi POS",
+  fallbackTitle = "Inovasi Pos",
   fallbackSubtitle = "Powered by Inovasi Tech Pvt. Ltd.",
 }: {
   branding: TenantBranding | null;
@@ -56,7 +56,7 @@ export function TenantBrandingHeader({
   return (
     <div className="auth-slide-brand-inline">
       <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white p-1.5 shadow-md ring-1 ring-primary/20">
-        <img src="/inovasi-logo.png" alt="Inovasi POS" className="h-full w-full object-contain" />
+        <img src="/inovasi-logo.png" alt="Inovasi Pos" className="h-full w-full object-contain" />
       </div>
       <div className="text-left">
         <p className="text-sm font-semibold leading-tight">{fallbackTitle}</p>

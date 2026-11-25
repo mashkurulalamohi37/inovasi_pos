@@ -76,7 +76,7 @@ function parseLink(to: string) {
 function BrandMark({ collapsed, user, posMode }: { collapsed?: boolean; user?: any; posMode?: string }) {
   const isSuperAdmin = user?.role === "super_admin" || user?.is_super_admin;
   // Derive company display name from the logged-in user
-  const companyName = user?.company_name || user?.company_code || "Inovasi POS";
+  const companyName = user?.company_name || user?.company_code || "Inovasi Pos";
   // Derive POS label from active posMode
   const posLabel = posMode
     ? posMode === "universal" ? "Universal POS" : `${posMode.charAt(0).toUpperCase() + posMode.slice(1)} POS`

@@ -81,10 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Inovasi POS — Enterprise Multi-Vertical Retail Platform" },
-      { name: "description", content: "Inovasi POS by Inovasi Tech Pvt. Ltd. — unified point-of-sale and retail operations platform for pharmacy, fashion, grocery, restaurant, jewelry and more." },
+      { title: "Inovasi Pos — Enterprise Multi-Vertical Retail Platform" },
+      { name: "description", content: "Inovasi Pos by Inovasi Tech Pvt. Ltd. — unified point-of-sale and retail operations platform for pharmacy, fashion, grocery, restaurant, jewelry and more." },
       { name: "author", content: "Inovasi Tech Pvt. Ltd." },
-      { property: "og:title", content: "Inovasi POS — Inovasi Tech Pvt. Ltd." },
+      { property: "og:title", content: "Inovasi Pos — Inovasi Tech Pvt. Ltd." },
       { property: "og:description", content: "Intelligent multi-vertical point-of-sale built by Inovasi Tech Pvt. Ltd." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
