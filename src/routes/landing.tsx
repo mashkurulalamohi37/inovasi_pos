@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   BarChart3,
-  Check,
   CheckCircle2,
   Cpu,
   ExternalLink,
@@ -54,11 +53,6 @@ type VerticalPack = {
   tagline: string;
   desc: string;
   modules: string[];
-  accentDot: string;
-  sampleCounter: string;
-  sampleStatus: string;
-  sampleItems: Array<{ label: string; meta: string; amount: string }>;
-  sampleTotal: string;
 };
 
 const packs: VerticalPack[] = [
@@ -70,15 +64,6 @@ const packs: VerticalPack[] = [
     tagline: "FEFO · Rx · Batch Control",
     desc: "FEFO batch dispensing, expiry alerts, prescription capture, and restricted-medicine audit trails.",
     modules: ["FEFO Stock", "Batch & Expiry", "Rx Capture"],
-    accentDot: "bg-sky-500",
-    sampleCounter: "Counter 02 · Shymoli Care",
-    sampleStatus: "FEFO Auto-Pick Active",
-    sampleItems: [
-      { label: "Napa Extend 665mg (Box)", meta: "Batch #B2608 · Exp 11/27", amount: "৳ 240" },
-      { label: "Sergel 20mg Capsule (2x)", meta: "Batch #S1042 · FEFO #1", amount: "৳ 140" },
-      { label: "Vitamin D3 Softgel", meta: "OTC · Shelf A-04", amount: "৳ 380" },
-    ],
-    sampleTotal: "৳ 760",
   },
   {
     id: "restaurant",
@@ -88,15 +73,6 @@ const packs: VerticalPack[] = [
     tagline: "KOT · Tables · Split Bills",
     desc: "Instant KOT kitchen routing, floor & table management, modifiers, takeaway lanes, and split billing.",
     modules: ["Live KOT", "Table Map", "Split Check"],
-    accentDot: "bg-orange-500",
-    sampleCounter: "Table T-08 · Dine-In",
-    sampleStatus: "KOT #412 Sent to Kitchen",
-    sampleItems: [
-      { label: "Smoked Chicken Platter", meta: "Spicy · Extra Garlic Dip", amount: "৳ 690" },
-      { label: "Mutton Kacchi (Full)", meta: "KOT Station: Grill", amount: "৳ 520" },
-      { label: "Fresh Mint Lemonade (2x)", meta: "Bar Ticket #88", amount: "৳ 320" },
-    ],
-    sampleTotal: "৳ 1,530",
   },
   {
     id: "fashion",
@@ -106,15 +82,6 @@ const packs: VerticalPack[] = [
     tagline: "Size · Color · Exchanges",
     desc: "Size, color & fit variant matrix, seasonal price lists, smooth exchanges, and alteration job tickets.",
     modules: ["Variant Matrix", "Alterations", "Exchanges"],
-    accentDot: "bg-amber-500",
-    sampleCounter: "Lane 01 · Dhanmondi Flagship",
-    sampleStatus: "Season Offer Applied",
-    sampleItems: [
-      { label: "Linen Tailored Shirt", meta: "Size L · Sand · SKU-4410", amount: "৳ 2,450" },
-      { label: "Selvedge Slim Chino", meta: "32W · Charcoal · Hem +1", amount: "৳ 2,890" },
-      { label: "Handcrafted Leather Belt", meta: "Tan · Gift Wrap", amount: "৳ 1,250" },
-    ],
-    sampleTotal: "৳ 6,590",
   },
   {
     id: "grocery",
@@ -124,15 +91,6 @@ const packs: VerticalPack[] = [
     tagline: "Fast Lane · Scale · Promos",
     desc: "High-speed barcode & keyboard lane, weight/volume scale pricing, bundle promos, and stock alerts.",
     modules: ["Weigh Scale", "Bundle Promos", "Fast Lane"],
-    accentDot: "bg-lime-500",
-    sampleCounter: "Express Lane 04 · Uttara",
-    sampleStatus: "Barcode + Scale Linked",
-    sampleItems: [
-      { label: "Miniket Premium Rice 5kg", meta: "Barcode 8941100231", amount: "৳ 415" },
-      { label: "Fresh Organic Tomatoes", meta: "1.45 kg × ৳ 90/kg", amount: "৳ 131" },
-      { label: "Cold-Pressed Mustard Oil 1L", meta: "Combo -5% Applied", amount: "৳ 340" },
-    ],
-    sampleTotal: "৳ 886",
   },
   {
     id: "jewelry",
@@ -142,14 +100,6 @@ const packs: VerticalPack[] = [
     tagline: "Gold Rate · Karigar · Hallmarks",
     desc: "Live gold-rate calculations, making charges, karigar tracking, buyback ledger, and hallmark certificates.",
     modules: ["Live Gold Rate", "Karigar Jobs", "Certificates"],
-    accentDot: "bg-yellow-500",
-    sampleCounter: "Showroom 01 · Gulshan",
-    sampleStatus: "22K Rate Locked · Today",
-    sampleItems: [
-      { label: "22K Heritage Necklace", meta: "14.20g · Making + Hallmark", amount: "৳ 1,86,400" },
-      { label: "Diamond Solitaire Studs", meta: "Cert #INV-9021 · IGI", amount: "৳ 48,500" },
-    ],
-    sampleTotal: "৳ 2,34,900",
   },
   {
     id: "electronics",
@@ -159,14 +109,6 @@ const packs: VerticalPack[] = [
     tagline: "IMEI · Serials · Warranty",
     desc: "Unit-level serial & IMEI scanning, automated warranty cards, EMI schedules, and AMC service logs.",
     modules: ["IMEI & Serial", "Warranty Cards", "EMI Plans"],
-    accentDot: "bg-cyan-500",
-    sampleCounter: "Tech Hub · Banani",
-    sampleStatus: "Serial & Warranty Bound",
-    sampleItems: [
-      { label: "ProBook 14 Business Laptop", meta: "S/N: IN-984210 · 24m Wrty", amount: "৳ 84,500" },
-      { label: "USB-C 9-in-1 Dock", meta: "S/N: DK-44012 · 12m Wrty", amount: "৳ 4,200" },
-    ],
-    sampleTotal: "৳ 88,700",
   },
 ];
 
@@ -255,11 +197,8 @@ const deploymentSteps = [
 
 function Landing() {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "annual">("monthly");
-  const [activePackId, setActivePackId] = useState<string>(packs[0].id);
   const plansQuery = usePublicSubscriptionPlans();
   const plans = plansQuery.data ?? [];
-
-  const activePack = packs.find((p) => p.id === activePackId) ?? packs[0];
 
   return (
     <div className="min-h-screen page-gradient text-foreground">
@@ -312,29 +251,19 @@ function Landing() {
         </div>
       </header>
 
-      {/* Split Editorial Hero with Interactive POS Terminal Preview */}
-      <section className="relative overflow-hidden border-b border-border/70">
-        <div className="pointer-events-none absolute inset-0 grid-bg opacity-35" />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-[520px] w-[520px] rounded-full bg-primary/12 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 -left-24 h-[440px] w-[440px] rounded-full bg-brand-3/15 blur-3xl" />
-        <div className="pointer-events-none absolute right-1/3 top-1/2 h-[280px] w-[280px] rounded-full bg-brand-2/10 blur-3xl" />
-
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-12 lg:gap-10 lg:py-22">
+      {/* Split Editorial Hero */}
+      <section className="relative border-b border-border/70">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-12 lg:gap-12 lg:py-20">
           {/* Left Column: Brand Value Prop */}
           <div className="lg:col-span-6">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-card/90 px-3.5 py-1.5 text-xs font-medium text-foreground shadow-xs backdrop-blur-sm">
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-orange-500" />
-                <span className="h-2 w-2 rounded-full bg-sky-500" />
-                <span className="h-2 w-2 rounded-full bg-lime-500" />
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
-              </span>
-              <span className="text-muted-foreground">Inovasi Tech Pvt. Ltd. · Enterprise POS Suite</span>
+            <div className="mb-5 inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+              <span className="h-0.5 w-6 bg-primary" />
+              <span>Inovasi Tech Pvt. Ltd.</span>
             </div>
 
-            <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-tight text-foreground sm:text-5xl lg:text-[56px]">
-              Intelligent POS.
-              <span className="mt-1 block text-gradient">Built to scale every store.</span>
+            <h1 className="font-display text-4xl font-bold leading-[1.06] tracking-tight text-foreground sm:text-5xl lg:text-[54px]">
+              One POS platform.
+              <span className="mt-1 block text-primary">Built to scale every store.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-[17px]">
@@ -343,13 +272,13 @@ function Landing() {
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Button asChild size="lg" className="h-12 gap-2 px-6 text-sm font-semibold shadow-lg shadow-primary/25">
+              <Button asChild size="lg" className="h-12 gap-2 px-6 text-sm font-semibold shadow-md shadow-primary/20">
                 <Link to="/app/pos">
                   Launch POS Terminal
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 border-border bg-card/80 px-6 text-sm font-semibold hover:border-primary/40 hover:bg-accent">
+              <Button asChild size="lg" variant="outline" className="h-12 border-border bg-card px-6 text-sm font-semibold hover:border-primary/40 hover:bg-accent">
                 <Link to="/onboarding">Create Free Workspace</Link>
               </Button>
             </div>
@@ -370,117 +299,43 @@ function Landing() {
             </div>
           </div>
 
-          {/* Right Column: Interactive Live Terminal Preview */}
+          {/* Right Column: Editorial POS Hardware Photograph */}
           <div className="lg:col-span-6">
-            <div className="relative mx-auto max-w-xl">
-              {/* Decorative Glow Behind Card */}
-              <div className="pointer-events-none absolute -inset-3 rounded-3xl bg-gradient-to-tr from-primary/25 via-brand-3/20 to-brand-2/25 blur-2xl" />
-
-              <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-[#16151d] text-white shadow-2xl">
-                {/* Terminal Top Bar */}
-                <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-5 py-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid h-7 w-7 place-items-center rounded-lg bg-white p-1">
-                      <img src="/inovasi-logo.png" alt="Inovasi" className="h-full w-full object-contain" />
-                    </div>
-                    <div>
-                      <div className="font-display text-xs font-semibold tracking-wide text-white">
-                        Inovasi Pos Terminal
-                      </div>
-                      <div className="text-[11px] text-white/55">{activePack.sampleCounter}</div>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Sync Live
-                  </span>
-                </div>
-
-                {/* Vertical Mode Switcher */}
-                <div className="flex flex-wrap gap-1.5 border-b border-white/10 bg-white/[0.02] px-5 py-3">
-                  {packs.map((pack) => {
-                    const isActive = pack.id === activePack.id;
-                    return (
-                      <button
-                        key={pack.id}
-                        type="button"
-                        onClick={() => setActivePackId(pack.id)}
-                        className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all",
-                          isActive
-                            ? "bg-primary text-white shadow-md shadow-primary/30"
-                            : "bg-white/6 text-white/70 hover:bg-white/12 hover:text-white",
-                        )}
-                      >
-                        <pack.icon className="h-3.5 w-3.5" />
-                        {pack.name}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Preview Register Body */}
-                <div className="p-5">
-                  <div className="mb-3.5 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className={cn("h-2.5 w-2.5 rounded-full", activePack.accentDot)} />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-white/80">
-                        {activePack.name} Pack
-                      </span>
-                    </div>
-                    <span className="rounded-md bg-white/8 px-2.5 py-1 font-mono text-[11px] text-amber-300">
-                      {activePack.sampleStatus}
-                    </span>
-                  </div>
-
-                  {/* Line Items */}
-                  <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
-                    {activePack.sampleItems.map((item) => (
-                      <div
-                        key={item.label}
-                        className="flex items-center justify-between gap-3 border-b border-white/8 pb-2 last:border-b-0 last:pb-0"
-                      >
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-medium text-white">{item.label}</div>
-                          <div className="truncate font-mono text-[11px] text-white/50">{item.meta}</div>
-                        </div>
-                        <div className="shrink-0 font-mono text-sm font-semibold text-white">
-                          {item.amount}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Active Modules & Checkout Summary */}
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-primary/20 via-amber-500/12 to-sky-500/15 p-4 ring-1 ring-white/10">
-                    <div>
-                      <div className="text-[11px] uppercase tracking-wider text-white/60">Payable Total</div>
-                      <div className="font-display text-2xl font-bold tabular text-white">
-                        {activePack.sampleTotal}
-                      </div>
-                    </div>
-                    <Button asChild size="sm" className="gap-1.5 bg-primary text-white hover:bg-primary/90">
-                      <Link to={activePack.path}>
-                        Try {activePack.name} POS
-                        <ArrowUpRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                  </div>
-
-                  <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                    {activePack.modules.map((mod) => (
-                      <span
-                        key={mod}
-                        className="inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/5 px-2.5 py-0.5 text-[11px] text-white/75"
-                      >
-                        <Check className="h-3 w-3 text-amber-400" />
-                        {mod}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+            <figure className="overflow-hidden rounded-2xl border border-border bg-card shadow-xl shadow-foreground/[0.06]">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                <img
+                  src="/inovasi-hero-pos.jpg"
+                  alt="Inovasi Pos countertop terminal with thermal receipt printer, contactless card reader, and barcode scanner"
+                  className="h-full w-full object-cover"
+                />
               </div>
-            </div>
+              <figcaption className="grid grid-cols-3 divide-x divide-border border-t border-border bg-card px-4 py-3.5 text-left sm:px-5">
+                <div className="pr-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Hardware
+                  </div>
+                  <div className="mt-0.5 text-xs font-semibold text-foreground sm:text-sm">
+                    Thermal &amp; Barcode
+                  </div>
+                </div>
+                <div className="px-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Resilience
+                  </div>
+                  <div className="mt-0.5 text-xs font-semibold text-foreground sm:text-sm">
+                    Offline Queue Sync
+                  </div>
+                </div>
+                <div className="pl-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Scale
+                  </div>
+                  <div className="mt-0.5 text-xs font-semibold text-foreground sm:text-sm">
+                    Multi-Branch HQ
+                  </div>
+                </div>
+              </figcaption>
+            </figure>
           </div>
         </div>
       </section>
