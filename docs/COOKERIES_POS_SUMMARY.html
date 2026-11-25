@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crockery & Cookeries POS — Client Executive Summary</title>
+<style>
+  :root {
+    --primary: #b45309;
+    --primary-dark: #92400e;
+    --primary-light: #fef3c7;
+    --accent: #d97706;
+    --ink: #1e293b;
+    --ink-muted: #64748b;
+    --bg-page: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --success: #15803d;
+    --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--font-main);
+    color: var(--ink);
+    background: var(--bg-page);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 24px 0;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+
+  .no-print-bar {
+    max-width: 820px;
+    margin: 0 auto 16px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+  }
+
+  .btn-print {
+    background: #d97706;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-print:hover {
+    background: #b45309;
+  }
+
+  .header {
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-left h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    letter-spacing: -0.5px;
+  }
+
+  .header-left .subtitle {
+    font-size: 14px;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .badge-product {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  .section {
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .feature-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: #fdfdfd;
+    position: relative;
+  }
+
+  .feature-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .feature-card p {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.45;
+  }
+
+  .table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .table-custom th {
+    background: #f1f5f9;
+    color: #334155;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+  }
+
+  .table-custom td {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    color: #334155;
+  }
+
+  .table-custom tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .roi-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .roi-item {
+    background: #f8fafc;
+    border-left: 4px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .roi-item strong {
+    display: block;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .roi-item span {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+
+  @media print {
+    body {
+      background: #ffffff;
+      padding: 0;
+    }
+    .container {
+      box-shadow: none;
+      border: none;
+      padding: 0;
+      max-width: 100%;
+    }
+    .no-print-bar {
+      display: none;
+    }
+    .feature-card {
+      break-inside: avoid;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="no-print-bar">
+  <div>
+    <strong>Crockery & Cookeries POS — Client Summary</strong>
+    <span style="opacity: 0.8; font-size: 13px; margin-left: 8px;">(Ready to Save/Print as PDF)</span>
+  </div>
+  <button class="btn-print" onclick="window.print()">📥 Print / Save as PDF</button>
+</div>
+
+<div class="container">
+
+  <div class="header">
+    <div class="header-left">
+      <h1>Crockery & Cookeries POS</h1>
+      <div class="subtitle">Omni POS Core — Specialized Retail Solution for Dinnerware & Kitchenware</div>
+    </div>
+    <div class="badge-product">Retail Vertical Pack</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📌 1. Executive Summary</div>
+    <p style="font-size: 13.5px; color: #334155; line-height: 1.55;">
+      The <strong>Crockery & Cookeries POS</strong> module is tailored specifically for stores selling tableware, cookware, glassware, cutlery, kitchen organizers, and pressure cookers. It addresses the unique daily retail friction in this industry: selling individual pieces out of complete dinner sets, logging fragile item drops, cross-selling matching cooker spare parts, and packaging luxury gift sets.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">✨ 2. Core POS Capabilities</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3>🍽️ Set vs. Loose Piece Decanting</h3>
+        <p>Sell full 32-pc or 52-pc dinner sets, or break down a boxed set into individual loose plates and bowls with 1-click automatic stock conversion and calculated loose-item pricing.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>💔 In-Store Breakage & Damage Log</h3>
+        <p>Instantly record dropped, chipped, or damaged fragile items directly from the cashier screen with customizable damage audit reasons, keeping inventory 100% accurate.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>🎁 Gift & Transit Packaging Add-ons</h3>
+        <p>1-tap checkout add-on for bubble wrap protection (+৳60), luxury satin ribbon gift wrap (+৳150), or reinforced wooden crates (+৳350), with printed greeting messages.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>⚙️ Cookware Spares Cross-Sell</h3>
+        <p>When a pressure cooker or non-stick pan is added to the bill, the POS automatically suggests matching rubber gaskets, safety valves, and whistle weights.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>⚡ Compatibility Badges & Filters</h3>
+        <p>Fast filter chips for <strong>Induction-Safe</strong>, <strong>Microwave-Safe</strong>, and <strong>Warranty-Covered</strong> items to instantly answer customer questions on the floor.</p>
+      </div>
+
+      <div class="feature-card">
+        <h3>🏷️ Material Specifications</h3>
+        <p>Visual badges for materials: Opal Glass, Bone China, Ceramic, Melamine, Stainless Steel (304), Cast Iron, and Hard Anodized coatings.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📦 3. Department & Product Coverage</div>
+    <table class="table-custom">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Product Lines</th>
+          <th>Key Highlighted Attributes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Dinnerware & Tableware</strong></td>
+          <td>32-Pc & 52-Pc Sets, Loose Plates, Curry Bowls</td>
+          <td>Piece count, Microwave & Dishwasher safe, Opal/Ceramic</td>
+        </tr>
+        <tr>
+          <td><strong>Cookware & Cookers</strong></td>
+          <td>Pressure Cookers (3L, 5L, 6.5L), Karahi, Fry Pans</td>
+          <td>Induction ready, Capacity (Liters), Warranty years</td>
+        </tr>
+        <tr>
+          <td><strong>Glassware & Drinkware</strong></td>
+          <td>Tumbler Sets (6-Pc), Crystal Jugs, Thermal Mugs</td>
+          <td>Heat resistance, Fragile badge, Capacity (ml)</td>
+        </tr>
+        <tr>
+          <td><strong>Cutlery & Tools</strong></td>
+          <td>24-Pc Cutlery Sets, Chef Knives, Spatula Sets</td>
+          <td>Steel Grade (SS 304/410), Revolving Stand</td>
+        </tr>
+        <tr>
+          <td><strong>Spare Parts</strong></td>
+          <td>Gaskets, Safety Valves, Whistles, Handles</td>
+          <td>Cooker Brand & Size Match (Kiam, Hawkins, Prestige)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📈 4. Store ROI & Operational Value</div>
+    <div class="roi-list">
+      <div class="roi-item">
+        <strong>Faster Customer Service</strong>
+        <span>Instant filter chips reduce search time during peak shopping hours.</span>
+      </div>
+      <div class="roi-item">
+        <strong>Higher Order Value (AOV)</strong>
+        <span>Smart spare parts cross-sell and gift packaging increase revenue per receipt.</span>
+      </div>
+      <div class="roi-item">
+        <strong>Zero Unaccounted Shrinkage</strong>
+        <span>Instant breakage write-offs ensure real-time audit trail for fragile losses.</span>
+      </div>
+      <div class="roi-item">
+        <strong>Accurate Open-Stock Inventory</strong>
+        <span>Decanting system tracks sets and loose replacement items seamlessly.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div><strong>Omni POS Core</strong> — Multi-Industry Retail System</div>
+    <div>Confidential & Proprietary · Client Briefing Document</div>
+  </div>
+
+</div>
+
+</body>
+</html>

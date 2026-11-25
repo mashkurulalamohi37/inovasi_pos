@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="inovasi-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b24" />
+      <stop offset="100%" stop-color="#2c1910" />
+    </linearGradient>
+    <linearGradient id="inovasi-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#c2410c" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#inovasi-bg)" />
+  <circle cx="21" cy="17" r="4.5" fill="url(#inovasi-orange)" />
+  <path d="M17 26v21c0 4 3 7 7 7s6.5-2.5 7-6" stroke="url(#inovasi-orange)" stroke-width="6" stroke-linecap="round" />
+  <path d="M28 38l18-18m0 0h-11m11 0v11" stroke="url(#inovasi-orange)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="34" cy="24" r="3" fill="#0ea5c6" />
+  <circle cx="44" cy="37" r="3" fill="#8dc63f" />
+  <circle cx="48" cy="46" r="2.8" fill="#f4c41c" />
+</svg>

@@ -1,0 +1,54 @@
+/* Slide shine button animation — used by Button component (btn-slide-shine class).
+   Paste into your global CSS (e.g. index.css) after Tailwind layers. */
+
+.btn-slide-shine {
+  box-shadow:
+    8px 8px 18px rgba(0, 0, 0, 0.18),
+    -4px -4px 10px rgba(255, 255, 255, 0.05),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    filter 0.2s ease;
+}
+
+.btn-slide-shine::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.7s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn-slide-shine:hover:not(:disabled)::before {
+  left: 130%;
+}
+
+.btn-slide-shine:hover:not(:disabled) {
+  transform: translateY(-5px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-slide-shine {
+    transition: none;
+  }
+
+  .btn-slide-shine:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .btn-slide-shine::before {
+    transition-duration: 0.01ms;
+  }
+}

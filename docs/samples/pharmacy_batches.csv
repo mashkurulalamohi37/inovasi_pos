@@ -1,0 +1,3 @@
+sku,batch_no,expiry_date,qty,store_code
+PHARM-001,BATCH-2026-01,2027-06-30,200,DHK-01
+PHARM-002,BATCH-2026-02,2026-12-31,150,DHK-01

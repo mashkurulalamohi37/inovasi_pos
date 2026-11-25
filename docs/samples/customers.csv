@@ -1,0 +1,3 @@
+code,name,phone,email,loyalty_tier
+CUST-001,Walk-in Customer,,,standard
+CUST-002,Green Valley Retail,01711000001,contact@greenvalley.example,gold

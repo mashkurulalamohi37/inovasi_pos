@@ -1,0 +1,357 @@
+/** Sliding login / signup panel — adapted for Pulse oklch theme tokens */
+
+.auth-slide-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    var(--background) 0%,
+    color-mix(in oklab, var(--brand-3) 14%, var(--background)) 50%,
+    color-mix(in oklab, var(--brand-2) 10%, var(--background)) 100%
+  );
+}
+
+.auth-slide-brand {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--foreground);
+}
+
+.auth-slide-brand-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+  width: 100%;
+}
+
+.auth-slide-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 820px;
+  min-height: 500px;
+  background: var(--card);
+  border-radius: 30px;
+  box-shadow:
+    0 8px 32px color-mix(in oklab, var(--foreground) 8%, transparent),
+    0 2px 8px color-mix(in oklab, var(--brand) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+}
+
+@media (max-width: 768px) {
+  .auth-slide-container {
+    min-height: 540px;
+  }
+}
+
+.auth-slide-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-slide-form-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1.25rem 2rem;
+  overflow-y: auto;
+}
+
+.auth-slide-form--signin {
+  z-index: 2;
+}
+
+.auth-slide-form--signup {
+  opacity: 0;
+  z-index: 1;
+}
+
+.auth-slide-container.is-active .auth-slide-form--signin {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.auth-slide-container.is-active .auth-slide-form--signup {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: auth-slide-signup-z 0.6s ease-in-out;
+}
+
+@keyframes auth-slide-signup-z {
+  0%,
+  49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  50%,
+  100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.auth-slide-toggle-wrap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out, border-radius 0.6s ease-in-out;
+  border-radius: 150px 0 0 100px;
+  z-index: 1000;
+}
+
+.auth-slide-container.is-active .auth-slide-toggle-wrap {
+  transform: translateX(-100%);
+  border-radius: 0 150px 100px 0;
+}
+
+.auth-slide-toggle-inner {
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--brand) 88%, black) 0%, var(--brand) 52%, var(--brand-3) 100%);
+  color: var(--primary-foreground);
+}
+
+.auth-slide-container.is-active .auth-slide-toggle-inner {
+  transform: translateX(50%);
+}
+
+.auth-slide-toggle-panel {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 1.75rem;
+  text-align: center;
+  transition: transform 0.6s ease-in-out;
+}
+
+.auth-slide-toggle-panel h2 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.auth-slide-toggle-panel p {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  margin: 0 0 1rem;
+  opacity: 0.95;
+}
+
+.auth-slide-toggle-panel--left {
+  transform: translateX(-200%);
+}
+
+.auth-slide-container.is-active .auth-slide-toggle-panel--left {
+  transform: translateX(0);
+}
+
+.auth-slide-toggle-panel--right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.auth-slide-container.is-active .auth-slide-toggle-panel--right {
+  transform: translateX(200%);
+}
+
+.auth-slide-input {
+  margin: 0.25rem 0 0.5rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.auth-slide-input:focus-visible {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent);
+}
+
+.auth-workspace-block {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.auth-workspace-row {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.auth-workspace-input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  padding: 0.625rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--foreground);
+  outline: none;
+}
+
+.auth-workspace-input:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent);
+  border-color: var(--ring);
+}
+
+.auth-workspace-verify-btn {
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  border: 0;
+  background: linear-gradient(135deg, var(--brand), color-mix(in oklab, var(--brand) 55%, var(--brand-3)));
+  padding: 0.5rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-foreground);
+  transition: opacity 0.15s ease, transform 0.2s ease;
+}
+
+.auth-workspace-verify-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.auth-workspace-verify-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.auth-slide-change-company {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-bottom: 0.625rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 0;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-slide-change-company:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--primary) 50%, transparent);
+  color: var(--primary);
+  box-shadow: 0 2px 6px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+.auth-slide-container--tall {
+  min-height: 580px;
+}
+
+.auth-slide-org-hint {
+  margin-top: 0.75rem;
+  width: 100%;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 768px) {
+  .auth-slide-form {
+    width: 100%;
+  }
+
+  .auth-slide-form-inner {
+    padding: 0 1.25rem;
+  }
+
+  .auth-slide-toggle-wrap {
+    display: none;
+  }
+
+  .auth-slide-form--signin,
+  .auth-slide-form--signup {
+    transform: none !important;
+    opacity: 1 !important;
+    position: relative;
+    width: 100%;
+    height: auto;
+    min-height: 420px;
+  }
+
+  .auth-slide-container.is-active .auth-slide-form--signin {
+    display: none;
+  }
+
+  .auth-slide-container:not(.is-active) .auth-slide-form--signup {
+    display: none;
+  }
+
+  .auth-slide-mobile-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+}
+
+.auth-slide-mobile-tabs {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-slide-form,
+  .auth-slide-toggle-wrap,
+  .auth-slide-toggle-inner,
+  .auth-slide-toggle-panel {
+    transition-duration: 0.01ms;
+  }
+
+  .auth-slide-container.is-active .auth-slide-form--signup {
+    animation: none;
+  }
+}

@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant POS — QA Test Report</title>
+<style>
+  :root {
+    --ground: #f4f6f6;
+    --surface: #ffffff;
+    --surface-2: #eceff0;
+    --ink: #1a2427;
+    --ink-2: #3d4c50;
+    --muted: #6a787c;
+    --line: #d5dcdd;
+    --line-strong: #b6c1c3;
+    --accent: #0d635b;
+    --accent-soft: #e0efed;
+    --sev-critical: #9e1f36;
+    --sev-high: #b2591a;
+    --sev-medium: #7d6414;
+    --sev-low: #3f6377;
+    --sev-critical-bg: #f8e6e9;
+    --sev-high-bg: #fbeadd;
+    --sev-medium-bg: #f7f0d8;
+    --sev-low-bg: #e5eef3;
+    --pass: #1c6b45;
+    --fail: #9e1f36;
+    --block: #6a787c;
+
+    --sans: ui-sans-serif, "Segoe UI", Roboto, system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10181a;
+      --surface: #182225;
+      --surface-2: #1f2b2e;
+      --ink: #e4ebec;
+      --ink-2: #b8c5c7;
+      --muted: #8a9a9e;
+      --line: #2b393d;
+      --line-strong: #3d4e52;
+      --accent: #48b8a8;
+      --accent-soft: #16302e;
+      --sev-critical: #f08098;
+      --sev-high: #eda06a;
+      --sev-medium: #d7bc5c;
+      --sev-low: #8ab4cb;
+      --sev-critical-bg: #331119;
+      --sev-high-bg: #33200f;
+      --sev-medium-bg: #2e280d;
+      --sev-low-bg: #17272f;
+      --pass: #5cc294;
+      --fail: #f08098;
+      --block: #8a9a9e;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #10181a;
+    --surface: #182225;
+    --surface-2: #1f2b2e;
+    --ink: #e4ebec;
+    --ink-2: #b8c5c7;
+    --muted: #8a9a9e;
+    --line: #2b393d;
+    --line-strong: #3d4e52;
+    --accent: #48b8a8;
+    --accent-soft: #16302e;
+    --sev-critical: #f08098;
+    --sev-high: #eda06a;
+    --sev-medium: #d7bc5c;
+    --sev-low: #8ab4cb;
+    --sev-critical-bg: #331119;
+    --sev-high-bg: #33200f;
+    --sev-medium-bg: #2e280d;
+    --sev-low-bg: #17272f;
+    --pass: #5cc294;
+    --fail: #f08098;
+    --block: #8a9a9e;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  /* ---- masthead ---- */
+  .masthead {
+    padding-top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 28px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+  .standfirst {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 1.06rem;
+    color: var(--ink-2);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+
+  /* ---- verdict banner ---- */
+  .verdict {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--sev-critical-bg);
+    border: 1px solid var(--sev-critical);
+    border-left-width: 5px;
+    border-radius: 3px;
+    padding: 18px 20px;
+  }
+  .verdict-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--sev-critical);
+    white-space: nowrap;
+    padding-top: 3px;
+  }
+  .verdict p { margin: 0 0 8px; color: var(--ink); }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  /* ---- tally board ---- */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .tile {
+    background: var(--surface);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .tile .n {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile .k {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .n.crit { color: var(--sev-critical); }
+  .n.high { color: var(--sev-high); }
+  .n.med  { color: var(--sev-medium); }
+  .n.low  { color: var(--sev-low); }
+  .n.pass { color: var(--pass); }
+  .n.fail { color: var(--fail); }
+  .n.blok { color: var(--block); }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 20px; }
+  h2 {
+    margin: 0;
+    font-size: 1.55rem;
+    letter-spacing: -0.02em;
+    font-weight: 750;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 0.72em;
+    font-weight: 600;
+    color: var(--accent);
+    margin-right: 12px;
+    letter-spacing: 0;
+  }
+  h3 {
+    margin: 12px 0 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  p { margin: 0; max-width: 72ch; }
+  section > p { color: var(--ink-2); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.855em;
+    background: var(--surface-2);
+    padding: 0.1em 0.36em;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 720px; }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 11px 14px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.id { font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; font-weight: 600; }
+  td.res { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; white-space: nowrap; }
+  .r-pass { color: var(--pass); }
+  .r-fail { color: var(--fail); }
+  .r-block { color: var(--block); }
+
+  .pri {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .p1 { color: var(--sev-critical); }
+  .p2 { color: var(--sev-high); }
+  .p3 { color: var(--muted); }
+
+  /* ---- defect cards ---- */
+  .defects { display: flex; flex-direction: column; gap: 14px; }
+  .defect {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--line-strong);
+    border-radius: 3px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .defect.critical { border-left-color: var(--sev-critical); }
+  .defect.high     { border-left-color: var(--sev-high); }
+  .defect.medium   { border-left-color: var(--sev-medium); }
+  .defect.low      { border-left-color: var(--sev-low); }
+
+  .d-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+  .d-id {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .chip.critical { background: var(--sev-critical-bg); color: var(--sev-critical); }
+  .chip.high     { background: var(--sev-high-bg);     color: var(--sev-high); }
+  .chip.medium   { background: var(--sev-medium-bg);   color: var(--sev-medium); }
+  .chip.low      { background: var(--sev-low-bg);      color: var(--sev-low); }
+  .d-title { font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em; flex: 1 1 320px; }
+
+  .d-body { display: flex; flex-direction: column; gap: 10px; }
+  .row { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: start; }
+  .row > .lbl {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    padding-top: 4px;
+  }
+  .row > .val { color: var(--ink-2); font-size: 14.5px; }
+  .row > .val ol, .row > .val ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+  .val .exp { color: var(--pass); font-weight: 600; }
+  .val .act { color: var(--fail); font-weight: 600; }
+  .fix { border-top: 1px dashed var(--line-strong); padding-top: 10px; }
+  .fix .val { color: var(--ink); }
+
+  .src {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  /* ---- gap list ---- */
+  ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; color: var(--ink-2); max-width: 74ch; }
+  ol.plain { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; color: var(--ink-2); max-width: 74ch; }
+  ol.plain > li::marker { font-family: var(--mono); font-weight: 700; color: var(--accent); }
+
+  .note {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    padding: 14px 18px;
+    color: var(--ink);
+    font-size: 14.5px;
+  }
+  .note b { font-weight: 700; }
+
+  footer {
+    border-top: 1px solid var(--line-strong);
+    padding-top: 20px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 0 16px 64px; gap: 44px; }
+    .row { grid-template-columns: 1fr; gap: 3px; }
+    .row > .lbl { padding-top: 0; }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Quality Assurance · Defect Report</p>
+    <h1>Restaurant POS — Test Execution &amp; Defect Register</h1>
+    <p class="standfirst">Static, unit, and integration testing of the restaurant vertical in <code>omni-pos-core</code>: order lifecycle, table management, KOT/KDS, and billing. Browser-based testing could not be executed — the module does not compile.</p>
+    <div class="meta">
+      <span><b>Branch</b> main @ 7847be6</span>
+      <span><b>Date</b> 2026-08-09</span>
+      <span><b>Scope</b> Restaurant vertical only</span>
+      <span><b>Defects</b> 28</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <span class="verdict-tag">Release&nbsp;verdict<br>Blocked</span>
+    <div>
+      <p><b>Two independent blockers stop the restaurant POS from shipping.</b> The production build fails outright: <code>RestaurantPos.tsx</code> contains a duplicated JSX block committed to <code>main</code>, so neither <code>tsc</code> nor <code>vite build</code> can parse it.</p>
+      <p>Separately, the billing endpoint rejects every restaurant payment with <code>400 price_override_reason required</code>. The project's own backend tests confirm it — an order can be taken, sent to the kitchen, and served, but never closed, leaving the table occupied permanently.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Status update.</b> This register records the findings as they stood at <code>main</code> @ <code>7847be6</code>. All 28 defects have since been fixed — see <a href="#remediation">Remediation</a> for the design decisions worth reviewing and what still needs browser verification.
+  </div>
+
+  <section>
+    <h2><span class="num">01</span>Execution summary</h2>
+    <div class="board">
+      <div class="tile"><span class="n pass">14</span><span class="k">Passed</span></div>
+      <div class="tile"><span class="n fail">11</span><span class="k">Failed</span></div>
+      <div class="tile"><span class="n blok">9</span><span class="k">Blocked</span></div>
+      <div class="tile"><span class="n crit">2</span><span class="k">Critical</span></div>
+      <div class="tile"><span class="n high">8</span><span class="k">High</span></div>
+      <div class="tile"><span class="n med">12</span><span class="k">Medium</span></div>
+      <div class="tile"><span class="n low">6</span><span class="k">Low</span></div>
+    </div>
+    <p><b>34 test cases planned · 25 executable · 9 blocked by the build failure.</b> Blocked cases are all browser-dependent: cross-browser rendering, viewport responsiveness, keyboard navigation, console/network inspection, and back-button behaviour. They stay blocked until BUG-01 is resolved.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Test plan &amp; results</h2>
+    <p>Priority: <span class="pri p1">P1</span> revenue or data integrity · <span class="pri p2">P2</span> core flow · <span class="pri p3">P3</span> polish.</p>
+
+    <h3>Order lifecycle</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Steps</th><th>Expected</th><th>Pri</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td class="id">RP-01</td><td>Open dine-in order by tapping a free table</td><td>Tap an available table tile</td><td>Order opens, table turns occupied, toast confirms</td><td class="pri p2">P2</td><td class="res r-block">BLOCKED</td></tr>
+          <tr><td class="id">RP-02</td><td>Create order via API</td><td><code>POST /industry/restaurant/orders</code></td><td>200, order_no assigned, table occupied</td><td class="pri p1">P1</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-03</td><td>Reject second order on an occupied table</td><td>POST order for an already-occupied table</td><td>409 Table already has an active order</td><td class="pri p1">P1</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-04</td><td>Dine-in requires a table</td><td>POST dine_in with no table_id</td><td>400 table_id required</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-05</td><td>Delivery requires address + phone</td><td>POST delivery without either field</td><td>400 with both field names</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-06</td><td>Add line to order</td><td><code>POST /orders/{id}/lines</code></td><td>200, subtotal recalculated</td><td class="pri p1">P1</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-07</td><td>Reject line on a closed order</td><td>Add line after payment</td><td>400 Cannot add items to a closed order</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-08</td><td>Cancel order releases the table</td><td><code>POST /orders/{id}/cancel</code> with reason</td><td>Order cancelled, table available</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-09</td><td>Cancel requires a reason</td><td>POST cancel with empty body</td><td>400 reason required</td><td class="pri p3">P3</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-10</td><td>Order number uniqueness under load</td><td>Create N orders concurrently</td><td>All order_no values distinct</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Billing &amp; payment</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Steps</th><th>Expected</th><th>Pri</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td class="id">RP-11</td><td>Pay order → invoice + table release</td><td><code>POST /orders/{id}/pay</code></td><td>200, invoice created, table available</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-12</td><td>Equal split payment</td><td>POST pay with <code>split_count: 2</code></td><td>200, two equal payments summing to total</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-13</td><td>Settle dialog total matches charged total</td><td>Open Bill &amp; Pay, compare to invoice</td><td>Displayed total equals invoice total</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-14</td><td>Cart tax matches backend tax</td><td>Compare PosShell total to invoice</td><td>Identical to the paisa</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-15</td><td>Payment total must equal bill</td><td>POST pay with short payment</td><td>400 Payment total must equal bill</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-16</td><td>Reject discount above subtotal</td><td>POST pay, discount &gt; subtotal</td><td>400 Discount exceeds subtotal</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-17</td><td>Reject double billing</td><td>POST pay twice on one order</td><td>400 Order already billed</td><td class="pri p1">P1</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-18</td><td>Change-due resets between orders</td><td>Pay, open next order, view dialog</td><td>Tendered resets to zero</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Tables &amp; KOT</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Steps</th><th>Expected</th><th>Pri</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td class="id">RP-19</td><td>Add table from POS modal</td><td>+ Tables → fill form → Add Table</td><td>201/200, table appears in grid</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-20</td><td>Add table from back office</td><td>Tables page → New table</td><td>Table created</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-21</td><td>Reject duplicate table code</td><td>Create the same table_no twice</td><td>400 Table code already exists</td><td class="pri p3">P3</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-22</td><td>Edit table capacity &amp; zone</td><td>Pencil icon → change → Update</td><td>Values persist; code field shows table code</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-23</td><td>Delete an empty table</td><td>Trash icon → confirm</td><td>200, table removed</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-24</td><td>Block delete of occupied table</td><td>Delete a table with a live order</td><td>400 Cannot delete a table with an active order</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-25</td><td>Move order to another table</td><td>Move table → pick target → confirm</td><td>Order moves, source released</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+          <tr><td class="id">RP-26</td><td>Move via API contract</td><td><code>POST /orders/{id}/move-table</code></td><td>200, both tables updated</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-27</td><td>Send KOT for unsent lines</td><td>Add items → Send KOT</td><td>KOT created per station, unsent count → 0</td><td class="pri p1">P1</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-28</td><td>Reject KOT with nothing unsent</td><td>Send KOT twice</td><td>400 No unsent items</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-29</td><td>KDS status transitions</td><td>sent → accepted → preparing → ready</td><td>Each step 200; illegal jumps 400</td><td class="pri p2">P2</td><td class="res r-pass">PASS</td></tr>
+          <tr><td class="id">RP-30</td><td>KDS actions hidden without permission</td><td>Sign in as a role lacking kitchen_manage</td><td>Action buttons hidden</td><td class="pri p2">P2</td><td class="res r-fail">FAIL</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>UI, responsiveness, security</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Description</th><th>Steps</th><th>Expected</th><th>Pri</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td class="id">RP-31</td><td>Cross-browser render (Chrome, Firefox, Safari, Edge)</td><td>Load /app/pos/restaurant in each</td><td>Consistent layout, no console errors</td><td class="pri p2">P2</td><td class="res r-block">BLOCKED</td></tr>
+          <tr><td class="id">RP-32</td><td>Responsive at 390 / 768 / 1440 px</td><td>Resize; check table grid and header</td><td>No overflow or clipped controls</td><td class="pri p2">P2</td><td class="res r-block">BLOCKED</td></tr>
+          <tr><td class="id">RP-33</td><td>Keyboard navigation &amp; focus states</td><td>Tab through tiles, grid, dialogs</td><td>Visible focus, dialogs trap focus</td><td class="pri p3">P3</td><td class="res r-block">BLOCKED</td></tr>
+          <tr><td class="id">RP-34</td><td>CORS policy rejects unknown origins</td><td>Inspect middleware config</td><td>Explicit allowlist, no reflected origin with credentials</td><td class="pri p1">P1</td><td class="res r-fail">FAIL</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Defect register</h2>
+    <p>Ordered by severity. No fixes have been applied — this register is for triage and approval.</p>
+
+    <div class="defects">
+
+      <article class="defect critical">
+        <div class="d-head">
+          <span class="d-id">BUG-01</span>
+          <span class="chip critical">Critical</span>
+          <span class="d-title">Duplicated JSX block breaks the build — app does not compile</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val"><ol>
+            <li>Check out <code>main</code> at 7847be6</li>
+            <li>Run <code>npm run build</code> (or <code>npx tsc --noEmit</code>)</li>
+          </ol></span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Build completes; bundle emitted.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">Build fails: <code>Expected `}` but found `const`</code> at RestaurantPos.tsx:900:17. tsc reports 15 parse errors. A ~320-line block (product card renderer, modifier / move / split / pay / KOT dialogs) was pasted into the middle of the Kitchen-tickets dialog at line 900, orphaning the original.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Nothing deploys. The restaurant POS route cannot render in any browser, which blocks all nine browser-dependent test cases.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/features/pos/RestaurantPos.tsx:883–1220</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Delete the duplicated region (lines 900–1101 re-run content from 703–899) and restore the Kitchen-tickets dialog's original closing tags. Add <code>tsc --noEmit</code> to CI so a non-compiling commit cannot reach <code>main</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect critical">
+        <div class="d-head">
+          <span class="d-id">BUG-02</span>
+          <span class="chip critical">Critical</span>
+          <span class="d-title">Restaurant orders can never be paid — MSP guard rejects every bill</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val"><ol>
+            <li>Open a dine-in order and add a menu item</li>
+            <li><code>POST /industry/restaurant/orders/{id}/pay</code> with <code>{"tender":"cash","tax_rate":0.05}</code></li>
+          </ol></span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">200 — invoice created, order paid, table released.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">400 <code>price_override_reason required when selling below MSP or over discount cap</code>. Reproduced by the project's own suite: <code>test_pay_order_creates_invoice_and_releases_table</code> and <code>test_split_payment_equal</code> both fail (2 failed, 10 passed).</span></div>
+          <div class="row"><span class="lbl">Cause</span><span class="val">The pricing-authority guard in <code>sales_policy_service.py</code> was widened from fashion-only to all packs, but <code>bill_and_pay_order</code> was never updated. It forwards the menu price as <code>unit_price</code> and builds a meta dict with no <code>price_override_reason</code> key, so any menu price under the product's list price or MSP is rejected.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Highest-severity operational failure for a restaurant: staff can seat guests, fire the kitchen, and serve food, then find the bill uncloseable. The table stays occupied with no UI path to recover.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/services/restaurant_service.py:892–908 · sales_policy_service.py:185–210</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Treat the restaurant menu price as authoritative — pass the resolved list price, or thread an explicit <code>price_override_reason</code> through <code>SaleLineIn.meta</code> when the pack is <code>restaurant</code>. Add a regression test that pays an order whose menu price is below <code>base_price</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-03</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Settle Bill dialog understates the amount due by 15.5%</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val"><ol>
+            <li>Build an order totalling ৳1,000 subtotal</li>
+            <li>Open <b>Bill &amp; Pay</b> and read the dialog</li>
+          </ol></span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">VAT + service shown; Total Amount Due ৳1,155.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">VAT (5%) + Service shows <b>৳0</b> and Total Amount Due shows <b>৳1,000</b>. <code>order.tax</code> and <code>order.service_charge</code> both default to 0 and are only written during <code>bill_and_pay_order</code> — so the dialog reads them before they exist.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">The cashier reads ৳1,000 to the guest and the "Exact" preset tenders ৳1,000, while the invoice records ৳1,155. Every dine-in transaction under-collects, and the drawer will not reconcile.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/features/pos/RestaurantPos.tsx:829–836</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Compute the preview client-side with the same formula the backend uses — <code>service = subtotal × servicePct</code>, <code>tax = (subtotal + service) × 0.05</code> — or add a <code>POST /orders/{id}/quote</code> endpoint so the dialog and the invoice share one source of truth.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-04</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Cart total applies tax flat where the backend compounds it</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val">Enable <code>restaurant.service_charge</code>; compare the PosShell cart total to the issued invoice.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Cart total equals invoice total.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">PosShell receives <code>taxRate = 0.10 + 0.05 = 0.15</code> and renders subtotal × 1.15. The backend charges VAT on the service charge: <code>(subtotal × 1.10) × 1.05</code> = subtotal × 1.155. A ৳1,000 order differs by ৳5.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Persistent small variance on every serviced order; compounds across a shift and breaks end-of-day reconciliation.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/features/pos/RestaurantPos.tsx:484 · restaurant_service.py:920–927</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Pass the service charge to PosShell as a separate line rather than folding it into <code>taxRate</code>, so the display mirrors the backend's order of operations.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-05</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Add Table from the POS always fails — field name mismatch</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val"><ol><li>POS → <b>+ Tables</b></li><li>Enter code <code>T-06</code>, capacity 4</li><li>Press <b>Add Table</b></li></ol></span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Table created and shown in the grid.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">400 <code>table_no required</code>. The modal posts <code>table_number</code>; the service reads only <code>table_no</code> or <code>table_code</code>. The back-office page at <code>app.restaurant.tables.tsx</code> sends <code>table_no</code> and works, confirming this is a defect and not a naming convention.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">The headline feature of the last two commits is non-functional from the POS.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/features/pos/RestaurantPos.tsx:355–360 · restaurant_service.py:332</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Send <code>table_no</code> from the modal. Longer term, replace the <code>Record&lt;string, unknown&gt;</code> mutation bodies with typed request interfaces so the compiler catches these mismatches.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-06</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Move Table always fails — field name mismatch</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val">Open a dine-in order → <b>Move table</b> → pick a target → <b>Confirm Table Move</b>.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Order transfers; source table released.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">400 <code>destination_table_id required</code>. The UI posts <code>target_table_id</code>; the service accepts only <code>destination_table_id</code> or <code>table_id</code>.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Guests cannot be reseated. The API itself is correct (RP-26 passes), so this is purely a client contract error.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/features/pos/RestaurantPos.tsx:323–326 · restaurant_service.py:753</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Send <code>destination_table_id</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-07</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Delete table raises AttributeError — 500 on every attempt</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val"><code>DELETE /industry/restaurant/tables/{id}</code> on any table.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">200 with a confirmation message, or 400 if the table has an active order.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">500. <code>delete_table</code> reads <code>row.table_number</code> twice, but <code>RestaurantTable</code> defines <code>table_no</code> — there is no <code>table_number</code> attribute on the model.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Delete is unusable, and the 500 masks the intended 400 guard, so the toast shows a generic error instead of "Cannot delete a table with an active order".</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/services/restaurant_service.py:403,410 · models/industry.py:224</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Replace both references with <code>row.table_no</code>. Add a delete test to <code>test_restaurant_vertical_wiring.py</code> — the endpoint currently has no coverage at all.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-08</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Order and KOT numbers derived from row count — collides and scans</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val">Create two orders concurrently from separate terminals, or create an order after deleting an older one.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Monotonic, unique <code>order_no</code> / <code>kot_number</code>.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act"><code>_next_no</code> is <code>f"{prefix}-{len(rows)+1:06d}"</code> over every row for the company. Concurrent callers read the same count and mint the same number; deletions cause reuse. It also loads the full table into memory on every order and KOT creation.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Duplicate ticket numbers during a service rush send the wrong food to the wrong table, and order creation slows linearly as history accumulates.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/services/restaurant_service.py:59–61</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Use a database sequence or a per-company counter row updated under a lock, and add a unique constraint on <code>(company_id, order_no)</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-09</span>
+          <span class="chip high">High</span>
+          <span class="d-title">Client controls tax rate, service charge, and due-waiver on the bill</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val">Send <code>POST /orders/{id}/pay</code> with <code>{"tax_rate": 0, "payments": [{"method":"cash","amount":0}], "allow_due": true}</code> using any token holding <code>restaurant.order_manage</code>.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">Tax rate comes from tenant configuration; waiving the balance requires a manager permission.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act">All three are read straight from the request body. <code>allow_due</code> skips the <code>paid == total</code> assertion with no permission check, so the order closes as paid with nothing collected.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Any authenticated cashier — or anyone who replays a request from the browser console — can zero out VAT or close a bill without payment. Straightforward revenue-loss vector.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/services/restaurant_service.py:920–945</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Source <code>tax_rate</code> from tenant config; gate <code>allow_due</code> behind <code>pos.manager_discount</code> or a new <code>restaurant.allow_due</code> permission; validate <code>service_charge</code> against the configured percentage. Write an audit entry whenever any override is used.</span></div>
+        </div>
+      </article>
+
+      <article class="defect high">
+        <div class="d-head">
+          <span class="d-id">BUG-10</span>
+          <span class="chip high">High</span>
+          <span class="d-title">CORS reflects any origin while allowing credentials</span>
+        </div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Repro</span><span class="val">Set <code>CORS_ORIGINS=*</code> (as the non-production defaults and Docker examples do) and issue a cross-origin request from any host.</span></div>
+          <div class="row"><span class="lbl">Expected</span><span class="val exp">An explicit allowlist; wildcard and <code>allow_credentials</code> never combined.</span></div>
+          <div class="row"><span class="lbl">Actual</span><span class="val act"><code>allow_origin_regex=r".*"</code> with <code>allow_credentials=True</code> — the middleware echoes back whatever <code>Origin</code> is sent and permits credentialed requests from every site on the internet.</span></div>
+          <div class="row"><span class="lbl">Impact</span><span class="val">Mitigated in production by the config validator (<code>config.py:108</code> rejects <code>*</code> when <code>environment=production</code>) and by bearer tokens in <code>localStorage</code> rather than cookies. Staging and dev remain fully open, and the guard is one env var away from being bypassed.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/main.py:55–65</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Drop the <code>.*</code> regex. If a wildcard is genuinely needed for local work, pair it with <code>allow_credentials=False</code>, and extend the production validator to staging.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-11</span><span class="chip medium">Medium</span><span class="d-title">Tapping a table fails silently when order creation errors</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">The <code>catch</code> in <code>selectTable</code> clears state but shows no toast. A 409 or 400 leaves the tile looking tapped with no feedback, so staff tap repeatedly.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:266–269</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Surface <code>toast.error(detail)</code> in the catch, matching <code>handlePay</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-12</span><span class="chip medium">Medium</span><span class="d-title">Tendered amount persists across orders</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>tendered</code> is never reset on pay or on dialog open, so the next order opens showing the previous guest's change-due banner.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:139, 862–867</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val"><code>setTendered(0)</code> in <code>handlePay</code> and when <code>payOpen</code> becomes true.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-13</span><span class="chip medium">Medium</span><span class="d-title">Cart keeps stale lines when service mode switches</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">Switching Dine-in → Takeaway clears <code>activeOrderId</code> but not the cart, so the previous table's items stay visible and are charged to the new ticket.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:559–565</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Call <code>app.clearCart()</code> alongside <code>setActiveOrderId(null)</code>, and confirm before discarding a non-empty order.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-14</span><span class="chip medium">Medium</span><span class="d-title">Table map and KDS never auto-refresh</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val act">No <code>refetchInterval</code> on <code>useRestaurantTables</code> or <code>useRestaurantKots</code>. A table freed at terminal B still reads occupied at terminal A until someone triggers a mutation.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/hooks/use-api-config.ts:976–1010</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Add a 10–15s <code>refetchInterval</code> for tables and KOTs, or move the KDS to server-sent events.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-15</span><span class="chip medium">Medium</span><span class="d-title">Edit Table shows a raw UUID in the Table Code field</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>handleEditClick</code> sets <code>setNewTableNo(t.id)</code> — the UUID, not the table code. The field is disabled so it cannot be corrected, and the heading reads "Edit Table 3f7a9c2e-…" when no label is set.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:378–384, 1118</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Add <code>table_no</code> to the <code>TableRow</code> type and populate the field from it.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-16</span><span class="chip medium">Medium</span><span class="d-title">Kitchen dialog fetches every KOT in the company when no order is open</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">The hook is called with <code>undefined</code> when there is no active order, which drops the <code>order_id</code> filter and returns the company's entire KOT history — unpaginated.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:154</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Disable the query when <code>activeOrderId</code> is null.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-17</span><span class="chip medium">Medium</span><span class="d-title">Order and KOT list endpoints have no pagination or date bound</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>list_orders</code> and <code>list_kots</code> select every row for the company, then filter and sort in Python. The KDS board degrades continuously as history grows.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">restaurant_service.py:419–435, 786–804</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Push status filtering and ordering into SQL; add <code>limit</code>/<code>offset</code> and default the KDS to open tickets from the current service day.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-18</span><span class="chip medium">Medium</span><span class="d-title">Rapid taps create duplicate order lines</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">The product grid is never disabled while <code>addLine.isPending</code>, and <code>POST /lines</code> has no idempotency key. Double-tapping a dish on a busy touchscreen adds it twice; double-tapping a table fires two order creations.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:272–292, 690–702</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Disable the grid while a mutation is in flight, or accept a <code>client_line_id</code> the service can de-duplicate against — the pattern <code>create_sale_idempotent</code> already uses.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-19</span><span class="chip medium">Medium</span><span class="d-title">KDS action buttons shown to users who cannot use them</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>backendHasPermission</code> grants <code>restaurant.manage</code> if the user holds <b>any</b> mapped code. A POS-only role (<code>restaurant.view</code>, <code>order_manage</code>, <code>kot_manage</code>) passes the gate, sees Accept / Mark ready, and gets 403 on click because the endpoint needs <code>restaurant.kitchen_manage</code>.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/lib/backend-permissions.ts:173–178 · app.restaurant.kot.tsx:155 · rbac.py:187</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Gate the KDS action on the specific backend code rather than the coarse <code>restaurant.manage</code> alias.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-20</span><span class="chip medium">Medium</span><span class="d-title">Negative capacity and guest counts reach the database</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">The <code>min</code>/<code>max</code> attributes are advisory only — nothing validates on submit. <code>capacity: -5</code> is stored verbatim by <code>update_table</code>, which applies <code>int()</code> with no bounds check.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:1148–1157 · restaurant_service.py:370–371</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Validate <code>1 ≤ capacity ≤ 50</code> on both sides and return 400 rather than persisting nonsense.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-21</span><span class="chip medium">Medium</span><span class="d-title">Delete uses a native confirm() instead of the app's dialog</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>handleDeleteTable</code> calls <code>window.confirm</code>. <code>ConfirmActionDialog</code> is imported but never used. The native dialog is unstyled, is suppressible by the browser, and is blocked in sandboxed iframes — in which case delete proceeds with no confirmation at all.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:30, 387</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Use the imported <code>ConfirmActionDialog</code>, matching the KOT page.</span></div>
+        </div>
+      </article>
+
+      <article class="defect medium">
+        <div class="d-head"><span class="d-id">BUG-22</span><span class="chip medium">Medium</span><span class="d-title">"billing" table status is styled but never produced</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">The POS and the tables page both branch on <code>status === "billing"</code>, but <code>TABLE_STATUSES</code> is <code>available | occupied | reserved | cleaning | disabled</code>. A table mid-settlement shows as plain occupied, so staff cannot tell which tables are being closed out.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:50–52 · restaurant_service.py:47</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Either set the table to <code>billing</code> when the order reaches <code>billed</code>, or drop the dead branches.</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-23</span><span class="chip low">Low</span><span class="d-title">Menu images hardcoded to Unsplash with no error fallback</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>getRestaurantFoodImage</code> returns one of a dozen fixed <code>images.unsplash.com</code> URLs. On a POS terminal without internet — or if Unsplash rate-limits — every card shows a broken-image icon. There is no <code>onError</code> handler. It also leaks menu-browsing activity to a third party.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:60–120 · PosShell.tsx:1295–1300</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Bundle local placeholders per category and add <code>onError</code> to fall back to a neutral tile.</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-24</span><span class="chip low">Low</span><span class="d-title">8–10px badge text is unreadable at POS viewing distance</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val">Table tiles use <code>text-[8px]</code> for the status badge and <code>text-[10px]</code> for labels, several in <code>text-muted-foreground</code>. Well below a comfortable minimum, and below WCAG contrast at that size, on a screen read at arm's length under service pressure.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">RestaurantPos.tsx:593–608</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Raise the floor to 11–12px and use a colour-coded dot instead of micro-text for status.</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-25</span><span class="chip low">Low</span><span class="d-title">Product grid keyed by array index</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>ProductGrid</code> uses <code>key={i}</code>. When the category filter or search changes, React reuses DOM nodes across different products, causing lazy-loaded images to flash the wrong dish before settling.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">PosShell.tsx:1279</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Key on a stable item identity (SKU).</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-26</span><span class="chip low">Low</span><span class="d-title">Non-numeric capacity returns 500 instead of 400</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>int(body.get("capacity") or 4)</code> raises <code>ValueError</code> on <code>"four"</code>, surfacing as an unhandled 500. The endpoints take raw <code>dict</code> bodies, so FastAPI performs no schema validation.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">restaurant_service.py:350</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Define Pydantic request models for the restaurant endpoints — this closes BUG-05, BUG-06, BUG-20, and BUG-26 in one change.</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-27</span><span class="chip low">Low</span><span class="d-title">Table double-booking race on SQLite</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>for_update</code> is a no-op on any dialect other than PostgreSQL, so on the local SQLite database the "table already has an active order" check is a TOCTOU window. <code>move_table</code> takes no lock on the destination at all, even on PostgreSQL.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">backend/app/inventory/locking.py:13–16 · restaurant_service.py:756</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Add a unique partial index on <code>current_order_id</code> so the database rejects double-booking regardless of dialect, and lock the destination row in <code>move_table</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="defect low">
+        <div class="d-head"><span class="d-id">BUG-28</span><span class="chip low">Low</span><span class="d-title">Frontend "tests" are string matches that cannot fail on broken code</span></div>
+        <div class="d-body">
+          <div class="row"><span class="lbl">Actual</span><span class="val"><code>restaurant-vertical-wiring.test.ts</code> calls <code>readFileSync</code> and asserts substrings such as <code>expect(src).toContain("usePayRestaurantOrder")</code>. It never imports or renders the component — which is why all four cases pass against a file that does not parse.</span></div>
+          <div class="row"><span class="lbl">Source</span><span class="val src">src/test/restaurant-vertical-wiring.test.ts:28–40</span></div>
+          <div class="row fix"><span class="lbl">Fix</span><span class="val">Replace with Testing Library render tests over MSW-mocked endpoints covering select table → add item → send KOT → pay.</span></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>Coverage gaps</h2>
+    <ul class="plain">
+      <li><b>No browser verification was possible.</b> Cross-browser rendering, viewport behaviour at 390/768/1440px, keyboard navigation, focus trapping, console errors, and back-button-after-logout all remain untested until BUG-01 lands.</li>
+      <li><b>End-to-end coverage is one assertion.</b> The only restaurant case in <code>e2e/</code> is <code>GET /restaurant/tables</code> asserting <code>[200, 404]</code> — a 404 counts as a pass. Nothing exercises order → KOT → pay.</li>
+      <li><b>Table CRUD has zero backend tests.</b> Create, update, and delete are entirely uncovered, which is how BUG-07's AttributeError shipped.</li>
+      <li><b>No concurrency or load testing.</b> BUG-08 and BUG-27 were found by reading; neither would surface in single-threaded tests.</li>
+      <li><b>Offline and slow-network behaviour untested.</b> A POS must degrade gracefully; there is no retry, queue, or offline indicator on the restaurant path.</li>
+      <li><b>Printing untested.</b> KOT printing and receipt output were out of reach without a running app.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>Recommended sequence</h2>
+    <ol class="plain">
+      <li><b>Repair the build (BUG-01)</b> and add <code>tsc --noEmit</code> to CI. Everything else is gated on this.</li>
+      <li><b>Unblock payment (BUG-02).</b> Until this lands the vertical has no complete happy path.</li>
+      <li><b>Reconcile the money (BUG-03, BUG-04)</b> so the dialog, the cart, and the invoice agree to the paisa.</li>
+      <li><b>Fix the four API contract breaks (BUG-05, 06, 07, 09)</b> — ideally by introducing typed request models, which closes BUG-20 and BUG-26 as well.</li>
+      <li><b>Re-run this plan in a browser.</b> The nine blocked cases plus regression across all 25 executed cases.</li>
+      <li><b>Close the test gap (BUG-28)</b> with a real render test and a Playwright spec covering the full service cycle.</li>
+    </ol>
+  </section>
+
+  <section id="remediation">
+    <h2><span class="num">06</span>Remediation</h2>
+    <p>All 28 defects fixed. The decisions below changed behaviour beyond a straight repair and are worth a review.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Defect</th><th>Approach taken</th></tr></thead>
+        <tbody>
+          <tr><td class="id">BUG-01</td><td>Removed lines 900–1094 of <code>RestaurantPos.tsx</code>, a duplicated region re-running 703–899. The 154 type errors this exposed were always present — TypeScript skips semantic checks on a file with syntax errors.</td></tr>
+          <tr><td class="id">BUG-02</td><td>Moved the pricing-authority check from settlement to <b>order entry</b>, where staff can still act on it. Added <code>restaurant_order_line.price_override_reason</code> (migration <code>047</code>) so an approval given at entry is replayed at settlement rather than re-challenging a bill for food already eaten.</td></tr>
+          <tr><td class="id">BUG-03/04</td><td>Extracted the bill formula into <code>restaurant-billing.ts</code> and unit-tested it. Service charge and VAT <b>compound</b> (×1.155); they do not add (×1.15).</td></tr>
+          <tr><td class="id">BUG-08</td><td>Replaced <code>len(rows) + 1</code> with the atomic <code>NumberSeries</code> UPDATE already used by <code>sales_service._next_invoice_number</code>.</td></tr>
+          <tr><td class="id">BUG-09</td><td>Rates now come from store policy. Undercutting them, setting an explicit <code>tax</code>, or using <code>allow_due</code> requires an override permission — the new <code>restaurant.allow_due</code>.</td></tr>
+          <tr><td class="id">BUG-10</td><td>Dropped the <code>.*</code> regex. A wildcard now forces <code>allow_credentials=False</code>, and the wildcard ban extends to staging.</td></tr>
+          <tr><td class="id">BUG-28</td><td>Replaced <code>readFileSync</code> substring assertions with 9 behavioural tests that import the code under test.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Results after remediation</h3>
+    <div class="board">
+      <div class="tile"><span class="n pass">15</span><span class="k">Backend restaurant</span></div>
+      <div class="tile"><span class="n pass">9</span><span class="k">Frontend billing</span></div>
+      <div class="tile"><span class="n pass">0</span><span class="k">Build exit code</span></div>
+      <div class="tile"><span class="n pass">0</span><span class="k">Restaurant tsc errors</span></div>
+    </div>
+    <p>Backend restaurant tests went from 10 passed / 2 failed to <b>15 passed</b>, with three new cases covering the override path, the <code>allow_due</code> hole, and VAT defaulting.</p>
+
+    <h3>Still outstanding</h3>
+    <ul class="plain">
+      <li><b>The nine browser-dependent cases are still unverified.</b> They were blocked by BUG-01 and are now runnable, but have not been run. Cross-browser, responsive and keyboard testing is required before sign-off.</li>
+      <li><b>144 pre-existing type errors elsewhere in the codebase</b> are now visible to <code>tsc</code> — none in the restaurant vertical. Clear them before adding <code>tsc --noEmit</code> to CI, or the gate fails on day one.</li>
+      <li><b><code>RestaurantPos.tsx</code> carries 112 Prettier violations.</b> The file was never lintable, so it has never been formatted. Left alone deliberately — <code>--fix</code> would reformat the whole file and bury the diff.</li>
+      <li><b><code>e2e/</code> still has no restaurant service-cycle spec.</b> BUG-28 closed the unit-level gap only.</li>
+    </ul>  </section>
+
+  <section id="followup">
+    <h2><span class="num">07</span>Follow-up round — broken interactions</h2>
+    <p>Reading the POS against the backend after the defect fixes surfaced four interactions wired to nothing. They are not in the register above because they fail silently, or only on a path the original pass did not exercise.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Finding</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>The cart's <b>+ / − / ✕ controls did not persist</b>. The cart mirrors <code>order.lines</code>, but the controls called <code>app.updateQty</code> / <code>app.removeLine</code> — local state only, silently reverted by the next refetch. A waiter reduced a quantity and neither the kitchen nor the bill learned about it.</td><td>New <code>onLineQtyChange</code> / <code>onLineRemove</code> seam on <code>PosShell</code>; the restaurant routes both to the backend.</td></tr>
+          <tr><td><b>Qty-edit and void were unreachable.</b> <code>PATCH …/lines/{id}</code> and <code>POST …/lines/{id}/void</code> existed with no frontend hook at all — voiding a fired item could not be done from the POS.</td><td>Added the two mutation hooks plus a <code>VoidLineDialog</code> that captures the reason and gates on a new <code>restaurant.void_item</code> permission.</td></tr>
+          <tr><td><b>Delivery orders could not be created.</b> The backend requires <code>delivery_address</code> + <code>delivery_phone</code>; the POS had no fields, so Delivery plus any dish returned 400.</td><td><code>DeliveryDetailsDialog</code>, gated in <code>ensureOrder</code> so the ask happens before the guest orders.</td></tr>
+          <tr><td><b>No receipt after payment.</b> The restaurant carried a thin cash-only settle dialog beside PosShell's much richer one.</td><td>Deleted it. Settlement runs through PosShell via <code>onCompleteSale</code> + <code>totalsOverride</code>, gaining split tender, banknote chips, change display and a printable receipt.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><code>RestaurantPos.tsx</code> also split 1,190 → 971 lines, extracting <code>menu-images.ts</code>, <code>types.ts</code>, <code>ManageTablesDialog</code>, <code>VoidLineDialog</code> and <code>DeliveryDetailsDialog</code> into <code>src/features/pos/restaurant/</code>.</p>
+
+    <h3>Results</h3>
+    <div class="board">
+      <div class="tile"><span class="n pass">18</span><span class="k">Backend restaurant</span></div>
+      <div class="tile"><span class="n pass">12</span><span class="k">Frontend restaurant</span></div>
+      <div class="tile"><span class="n pass">499</span><span class="k">Backend suite</span></div>
+      <div class="tile"><span class="n pass">192</span><span class="k">Frontend suite</span></div>
+    </div>
+    <p>Six suite-wide failures remain — three backend, three frontend. All six <b>fail identically on pristine <code>HEAD</code></b>, verified in an isolated git worktree and against a stashed tree. None are in the restaurant vertical. Build exits 0; total <code>tsc</code> errors fell 154 → 144.</p>
+
+    <div class="note"><b>Release risk.</b> <code>PosShell.tsx</code> is shared by 19 verticals. Every new prop is optional and defaults to the previous behaviour, and only <code>RestaurantPos.tsx</code> opts in — but the qty/remove call sites and <code>completeSale</code> are common code, so smoke-test one other vertical in a browser before release.</div>
+  </section>
+
+  <footer>
+    <span>omni-pos-core · restaurant vertical</span>
+    <span>main @ 7847be6</span>
+    <span>34 planned · 25 executed · 9 blocked</span>
+    <span>2026-08-09</span>
+  </footer>
+
+</div>
+
+</body>
+</html>

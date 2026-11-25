@@ -1,0 +1,4 @@
+sku,name,industry_pack,base_price,barcode,category,is_active
+GROC-001,Premium Basmati Rice 5kg,grocery,850,GROC001001,Grocery,true
+PHARM-001,Paracetamol 500mg 10s,pharmacy,12,PHARM001001,Pharmacy,true
+FASH-001,Oxford Shirt M White,fashion,2490,FASH001001,Fashion,true

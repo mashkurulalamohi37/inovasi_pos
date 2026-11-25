@@ -1,0 +1,1308 @@
+SOFTWARE REQUIREMENTS &TECHNICAL DESIGN SPECIFICATION
+Jewelry (Gold) ShopManagement ERP
+Multi-branch retail, procurement, customer exchange, factory production, accounting and management platform for Bangladesh
+Document
+Value
+Purpose
+Developer-ready baseline for solution design, estimation, development, testing and implementation
+Target market
+Small and medium jewelry businesses operating 2–5 shops plus a factory/production house
+Channels
+Laptop/desktop, tablet and mobile-responsive web/PWA
+Version
+1.0
+Prepared date
+15 August 2026
+Status
+Baseline for stakeholder validation and sprint planning
+Core design principle
+Every gold movement must be traceable simultaneously by physical weight, purity/karat, fine-gold equivalent, quantity, location, ownership, source transaction and financial value.
+Document Control
+Version
+Date
+Prepared for
+Change summary
+1.0
+15-Aug-2026
+Product owner and development team
+Initial complete functional and technical baseline
+Approval Sign-off
+Role
+Name
+Decision
+Date/Signature
+Business Sponsor
+Approved / Changes Required
+Product Owner
+Approved / Changes Required
+Finance Lead
+Approved / Changes Required
+Technical Lead
+Approved / Changes Required
+How to Use This Document
+Business stakeholders validate scope, rules, roles and reports.
+Architects finalize technology, deployment and integration decisions.
+Developers convert requirement IDs and user stories into backlog items.
+QA engineers derive traceable functional, security, performance and UAT cases.
+Any regulatory or business-rule uncertainty is implemented as configuration and closed during discovery.
+Table of Contents
+Open this file in Microsoft Word and choose References → Table of Contents to generate an automatic table of contents from the heading hierarchy.
+Part
+Coverage
+1
+Vision, scope and operating model
+2
+Domain rules and calculations
+3
+Functional module specifications
+4
+Cross-module workflows
+5
+Roles, approvals and controls
+6
+Data architecture and database blueprint
+7
+API, integration and device design
+8
+Non-functional requirements
+9
+Reports, dashboards and analytics
+10
+Testing and acceptance
+11
+Implementation, migration and delivery
+12
+Appendices: statuses, glossary, backlog and open decisions
+1. Executive Summary
+The proposed ERP is a secure, multi-branch jewelry management platform designed for Bangladeshi small and medium businesses that procure new or old gold, manufacture ornaments, accept made-to-order jobs, and sell from multiple outlets. It must integrate commercial transactions with weight, purity, production and accounting control rather than treating jewelry as ordinary quantity-based merchandise.
+1.1 Business Outcomes
+One trusted stock position across shops, vaults, factory, work-in-process and goods in transit.
+Exact accountability for gold issued to and returned by each artisan/karigar.
+Fast, auditable POS pricing based on effective metal rates, product attributes, making charges, stones, wastage, VAT and approved discounts.
+Controlled purchase or exchange of customer old ornaments with purity, deduction and settlement evidence.
+Automatic accounting entries from operational transactions and branch-wise profitability.
+Owner access to live dashboards and approvals from mobile devices.
+1.2 Solution Boundaries
+In scope
+Out of scope unless separately approved
+Company, shop, factory, store, vault and counter setup
+Precious-metal refinery plant automation
+Employees, users, roles, attendance and payroll
+Government e-filing submission automation without an approved interface
+Metal rates, products, pricing, POS, orders, exchange and returns
+Full e-commerce marketplace and consumer mobile app
+Procurement, imports, inventory, production and karigar ledger
+Advanced diamond grading laboratory system
+Accounting, VAT/tax configuration, dashboards and reports
+Bank core integration or card acquiring gateway certification
+1.3 Target Operating Model
+Node
+Typical quantity
+Primary responsibility
+Head office
+1
+Master data, finance, approvals, consolidated reporting
+Retail shop/branch
+2–5
+POS, order receipt, customer exchange, cash and branch stock
+Factory/production house
+1
+Material issue, artisan work, WIP, recovery, QC and finished receipt
+Store/vault/counter
+Multiple
+Custody and movement of raw materials and ornaments
+Mobile user
+As assigned
+Approval, inquiry, dashboards and selected transactions
+2. Assumptions, Constraints and Dependencies
+ID
+Statement
+Treatment
+A-01
+Gold rates may be announced by BAJUS or entered from another authorized business source.
+Maintain source, effective time and maker-checker approval; do not hard-code provider.
+A-02
+VAT/tax/fiscal requirements can change.
+Use effective-dated configuration and validate with the client tax adviser/NBR requirements before go-live.
+A-03
+Internet may be unstable at some outlets.
+Provide resilient PWA behavior and a controlled offline POS option only if approved in architecture.
+A-04
+Balances may exist before ERP go-live.
+Use signed opening templates with reconciliation and lock after approval.
+A-05
+Weight precision is business-critical.
+Store weights in decimal units; never use binary floating point.
+A-06
+Bangla and English may be required.
+Externalize UI labels, print templates and master-data descriptions.
+A-07
+Each ornament normally has a unique tag.
+Support serialized/tag-level stock plus bulk raw-material lots.
+A-08
+Regulatory customer identification thresholds require confirmation.
+Make KYC fields and threshold/approval rules configurable.
+3. Domain Model and Accounting Concepts
+3.1 Units and Precision
+Data type
+Recommended storage
+Display/rounding
+Weight
+DECIMAL(18,6) in grams as canonical unit
+Configurable 3–4 decimals; optional ভরি/তোলা display conversion
+Purity
+DECIMAL(9,6)
+Karat or fineness; preserve tested value
+Money
+DECIMAL(18,2)
+BDT; currency-specific decimal places
+Rate per gram
+DECIMAL(18,6)
+Round only at defined invoice component/final total point
+Quantity
+DECIMAL(18,3)
+Pieces normally integer; bulk supplies may be fractional
+Exchange rate
+DECIMAL(18,8)
+Effective-dated and source-controlled
+3.2 Fine-Gold Equivalent
+Formula
+Fine Gold Weight = Net Metal Weight × Purity Factor. Purity factor may be karat ÷ 24 or fineness ÷ 1000, according to configured standard. Example: 10.000 g of 22K gold = 9.166667 g fine gold before configured rounding.
+3.3 Product Sale Price
+Configurable pricing engine
+Metal value + stone/diamond value + other material value + making charge + wastage/value addition + certification/other charge − approved discount + VAT/tax = invoice total. Each component must be stored separately for audit and returns.
+3.4 Old-Gold Purchase Value
+Configurable valuation
+Gross weight − stone/non-metal/dirt deductions = tested metal weight. Fine equivalent = tested metal weight × tested purity. Payable metal weight/value may apply recovery or melting deduction. Settlement can be cash/bank liability, exchange credit, or adjustment against a sale.
+3.5 Inventory Valuation
+Support weighted-average cost as the default financial method; FIFO may be added by configuration.
+Track tag-level actual cost for finished ornaments where reliable.
+Preserve metal, stone, making and overhead cost components.
+Revaluation caused by daily metal-rate changes is a management view unless finance explicitly posts a revaluation voucher.
+Negative stock is blocked by default and allowed only through a controlled override role with reason.
+4. Organization, Employee and User Management
+Req. ID
+Requirement
+Acceptance summary
+ORG-001
+Maintain company, business unit, branch, shop, factory, warehouse, vault and POS counter hierarchy.
+Every transaction carries company and location context.
+ORG-002
+Maintain financial year, timezone, currency, language and document numbering rules.
+Sequences are unique by configured scope.
+HR-001
+Maintain employee, designation, department, joining, status, identity and contact data.
+Inactive employees cannot create new transactions.
+SEC-001
+Create users linked to employees and assign role plus permitted locations.
+User cannot access an unassigned location.
+SEC-002
+Support password, MFA option, session timeout, login history and account lock.
+Security events are auditable.
+SEC-003
+Segregate view, create, edit, submit, approve, cancel, print, export and rate/discount override permissions.
+Authorization is enforced server-side.
+5. Master Data and Item Catalog
+Area
+Required attributes
+Metal
+Gold, silver, platinum; purity standard; karat/fineness; density/reference; active status
+Stone/diamond
+Type, shape, cut, color, clarity, carat, certificate agency/no., rate method
+Product
+SKU, unique tag/barcode, group, category, subcategory, design, collection, gender, size, image, hallmark
+Weight
+Gross, stone, other material, net metal, purity, fine-metal equivalent
+Price setup
+Metal rate rule, making rule, wastage/value-add rule, stone value, minimum margin, tax class
+Supplier/customer
+Type, identity, contact, BIN/TIN/NID fields as applicable, bank/MFS, credit limits
+Packaging/service
+Box, certificate, repair, resizing, polishing and other charge items
+Master changes that affect valuation or compliance require approval and effective dates.
+Duplicate barcode, tag number, SKU, hallmark/certificate number rules are enforced by configuration.
+Product images are optimized for mobile display; original documents are retained in object storage.
+All masters have active/inactive status; referenced records are never physically deleted.
+6. Daily Metal Rate and Pricing Engine
+Req. ID
+Requirement
+RATE-001
+Record source, effective date/time, metal, purity/karat, buy rate, sell rate, currency, unit, remarks and attachment.
+RATE-002
+Maker enters and authorized user approves; approved rates cannot be edited, only superseded.
+RATE-003
+Prevent overlapping active rates for the same scope unless priority rules resolve them.
+RATE-004
+Support national/company/branch scopes and controlled POS override.
+RATE-005
+Snapshot every applied rate and formula component onto quotation/order/invoice lines.
+PRICE-001
+Support fixed, percentage, per-gram, per-piece, tiered and negotiated making charges.
+PRICE-002
+Support minimum margin alerts, approval limits and price simulation.
+PRICE-003
+Return/exchange uses original component values or a separately approved current-rate policy.
+7. Procurement and Import Management
+Raise purchase requisition by shop, factory or store.
+Approve requisition based on amount/material/purity.
+Request and record supplier quotations; compare commercial terms.
+Create purchase order with delivery schedule and terms.
+Receive material through GRN, capture weight and quality results.
+Match supplier invoice with PO/GRN and calculate landed cost.
+Post inventory and accounting after approval.
+Settle supplier and manage return/debit note when required.
+Req. ID
+Requirement
+Control
+PUR-001
+PR → RFQ → quotation comparison → PO → GRN → invoice → payment.
+Configurable steps may be skipped only by authorized purchase type.
+PUR-002
+Support local, foreign, consignment and direct customer-source purchases.
+Purchase type drives required fields and accounting.
+PUR-003
+Capture ordered/received gross, net, purity and fine weight.
+Variance tolerance and approval.
+PUR-004
+Import cost: currency, exchange, LC/bank, freight, insurance, duty, clearing and other cost.
+Allocate by value, weight or quantity.
+PUR-005
+Three-way match with tolerance.
+Mismatch blocks posting or routes approval.
+PUR-006
+Supplier return reverses stock/value with traceability.
+Original lot and voucher referenced.
+8. Customer Old-Gold Purchase and Exchange
+Identify customer and obtain required declaration/consent.
+Create intake receipt; photograph and record ornament description.
+Measure gross weight and deductions.
+Test purity and record method, result and operator.
+Calculate fine/recoverable weight and proposed value.
+Obtain customer acceptance and required approval.
+Settle as cash/bank/MFS payable, exchange credit or invoice adjustment.
+Move material to old-gold vault, melting lot or return to customer.
+Req. ID
+Requirement
+OG-001
+Unique old-gold transaction number and tamper-evident receipt.
+OG-002
+Record gross, stone/non-metal deductions, tested net weight, karat/fineness, recovery deduction and fine weight.
+OG-003
+Capture test method, device/manual result, tester and optional witness.
+OG-004
+Store customer photo/ID fields and signed declaration when policy requires.
+OG-005
+Do not combine exchange credit with a sale until both are approved; preserve separate ledgers.
+OG-006
+Support partial settlement and balance payable/receivable.
+OG-007
+Cancellation after stock acceptance requires reversal approval and custody confirmation.
+OG-008
+Melting creates lot-level input, recovered gold, residue/scrap, loss and variance.
+9. Customer Order and Advance Management
+Req. ID
+Requirement
+ORD-001
+Capture customer, product/design image, metal, purity, size, target weight/range, stones, delivery date and instructions.
+ORD-002
+Generate estimated quotation using current rate and freeze the agreed pricing policy.
+ORD-003
+Receive advance by multiple payment modes and issue receipt.
+ORD-004
+Convert approved order to production work order or reserve existing stock.
+ORD-005
+Track Draft, Quoted, Confirmed, In Production, QC, Ready, Delivered, Cancelled and On Hold.
+ORD-006
+At delivery, calculate final price from actual weight/components per agreed policy and adjust advance/exchange credit.
+ORD-007
+Support cancellation fees, advance refund approval and abandoned-order policy.
+ORD-008
+Maintain customer communication log and notification consent.
+10. Factory Production and Karigar Management
+Process
+System behavior
+Key outputs
+Work order
+Create from customer order, replenishment plan or new design.
+Required design, target weight, due date, routing, costing basis
+Material issue
+Issue gold/alloy/stone/consumable by lot to employee/karigar.
+Issue voucher and karigar liability
+Operations
+Track melting, casting, forming, setting, polishing, finishing and subcontract work.
+Stage status, time, WIP location
+Additional/return
+Additional issue and unused material return reference the work order.
+Updated accountability
+Recovery
+Capture dust, scrap, filing, residue and recoverable metal.
+Recovery lots and fine-weight credit
+Receipt/QC
+Record finished weight, purity, components, defects and rework.
+Finished tag or rework decision
+Settlement
+Calculate labor, piece/gram rate, deductions and payable.
+Karigar bill and accounting voucher
+Variance
+Compare fine weight issued vs. finished + returns + recoveries.
+Gain/loss within tolerance or approval
+Mandatory reconciliation
+For each work order and karigar: Fine gold issued = fine gold in finished output + fine gold returned + approved recovery + approved process loss/gain. The work order cannot close outside tolerance without an authorized variance decision.
+Req. ID
+Requirement
+PRD-001
+Support internal employees and external karigars with separate custody and payable ledgers.
+PRD-002
+Prevent material issue without available stock, approved work order and authorized custodian.
+PRD-003
+Track WIP ownership, physical location and current holder.
+PRD-004
+Allow partial receipt, rework, rejection and split/merge work orders with genealogy.
+PRD-005
+Allocate material, labor, subcontract, consumable and overhead cost.
+PRD-006
+Generate unique finished tags and transfer to QC/vault/shop.
+PRD-007
+Age open work and alert overdue or excess outstanding gold.
+PRD-008
+Freeze closed work orders; corrections use controlled adjustment/reopen workflow.
+11. Inventory and Branch Transfer
+Stock dimensions: company, branch, store/vault/counter, item/tag/lot, metal, purity, ownership, status and transaction date.
+Stock states: Available, Reserved, In Transit, In Production, Under QC, Damaged, Customer-Owned, Consignment, Blocked.
+Movements: opening, purchase, sale, return, issue/receipt, production, transfer, adjustment, melting/recovery and revaluation.
+Req. ID
+Requirement
+INV-001
+Maintain immutable inventory ledger; balance is derived or posted through controlled double-entry stock movements.
+INV-002
+Support serialized finished ornaments and lot/bulk raw materials.
+INV-003
+Branch transfer request → approve → dispatch → transit → receive; sender and receiver weights recorded.
+INV-004
+Record discrepancy, damage and loss with evidence and approval.
+INV-005
+Physical count by blind count, recount, variance approval and adjustment.
+INV-006
+Block duplicate tag scan and sale of non-available stock.
+INV-007
+Provide as-of-date quantity, gross/net/fine weight, cost, retail value and rate-revalued value.
+INV-008
+Stock aging, slow movement, reorder and negative-stock exception reports.
+12. POS, Sales, Returns and Customer Service
+Feature
+Requirement
+Sale
+Scan tag; show image, weight, purity, components, effective rates and stock availability.
+Pricing
+Calculate componentized total; require permission for rate, discount, wastage or making override.
+Settlement
+Cash, card, bank, MFS, gift/credit, advance and old-gold exchange; allow split tender.
+Invoice
+Unique fiscal/commercial invoice, Bangla/English template, QR/barcode and reprint log.
+Return/exchange
+Reference original invoice, validate tag/condition, calculate reversal/current policy and approval.
+Customer
+Search by mobile/ID, history, outstanding, loyalty optional and communication consent.
+Closing
+Opening float, collections, refunds, expenses, deposits, expected vs. actual and variance.
+Devices
+Barcode/QR scanner, tag/receipt printer, weighing scale interface where supported.
+Req. ID
+Requirement
+POS-001
+Server validates price, rate, stock and authorization even if UI has calculated them.
+POS-002
+Invoice commit posts sale, inventory issue, payment/receivable and accounting atomically.
+POS-003
+Failed payment must not create a final invoice; use idempotent retry.
+POS-004
+Void/cancel after posting creates reversals and retains original document.
+POS-005
+Suspend/resume cart with stock reservation expiry.
+POS-006
+Cashier can only close own authorized counter/session.
+POS-007
+Offline transactions, if enabled, use signed device sequence, stock cache, limits and conflict queue.
+POS-008
+Print/reprint/email/SMS/WhatsApp-ready delivery with communication log.
+13. Cash, Bank, MFS and Expense Management
+Area
+Requirements
+Receipts/payments
+Voucher type, party, mode, account, reference, attachment, purpose, amount and approval.
+Cash counter
+Session opening, movement, denomination count, closing and variance.
+Bank/MFS
+Account master, deposits, withdrawals, transfers, charge and reconciliation.
+Customer/supplier
+Advance, on-account payment, allocation, refund and outstanding.
+Daily expense
+Category, cost center, branch, claimant, evidence, limit and approval.
+Petty cash
+Imprest, replenishment, custodian and settlement.
+Controls
+Back-date permission, closed-period lock, duplicate reference alert and maker-checker.
+14. Voucher Accounting and Financial Management
+Req. ID
+Requirement
+ACC-001
+Configurable chart of accounts, account groups, cost centers and branch segments.
+ACC-002
+Operational events generate balanced journal vouchers using posting-rule configuration.
+ACC-003
+Manual journal, receipt, payment and contra voucher with approval.
+ACC-004
+Customer, supplier, employee and karigar subledgers reconcile to control accounts.
+ACC-005
+Financial-period open/close/reopen with authorization and audit.
+ACC-006
+Trial balance, general ledger, cash flow, profit and loss and balance sheet.
+ACC-007
+Branch intercompany/inter-branch due-to/due-from and elimination reporting.
+ACC-008
+Year-end opening balance carry-forward without deleting history.
+ACC-009
+Optional budget and variance by branch/department/account.
+ACC-010
+Voucher drill-down to operational source and source drill-up to voucher.
+14.1 Indicative Posting Rules
+Event
+Debit
+Credit
+Cash sale
+Cash/bank/MFS; COGS
+Sales, output VAT/tax; inventory
+Credit sale
+Customer receivable; COGS
+Sales, output VAT/tax; inventory
+Purchase/GRN invoiced
+Inventory/input tax
+Supplier payable
+Customer old-gold purchase
+Old-gold inventory
+Cash/bank/customer exchange credit payable
+Production issue
+WIP inventory
+Raw material inventory
+Finished receipt
+Finished goods inventory
+WIP inventory
+Daily expense
+Expense/input tax where eligible
+Cash/payable
+Payroll
+Salary/benefit expense
+Employee payable/deductions
+Customer advance
+Cash/bank
+Customer advance liability
+15. VAT, Tax and Compliance Configuration
+Compliance boundary
+The application must support effective-dated rules, registers and evidence; the client’s tax adviser must confirm current NBR, VAT, Mushak, fiscal-device and record-retention obligations before configuration and go-live.
+Company BIN/TIN and branch registration data.
+Tax codes with rate, effective date, inclusive/exclusive behavior, recoverability and rounding.
+Product/service tax classification and exemption/zero-rate reasons.
+Output/input VAT registers and invoice sequence controls.
+Withholding/deduction configuration for supplier/service payments where applicable.
+Correction through debit/credit note; no silent edit of filed/closed transactions.
+Exportable audit package with invoices, vouchers and supporting documents.
+16. Attendance, Payroll and Karigar Payables
+Area
+Requirement
+Attendance
+Shift, roster, device/manual attendance, late, overtime, leave and holiday.
+Salary
+Basic, allowance, overtime, bonus, commission, deduction and net pay.
+Loans/advance
+Disbursement, installment, balance and payroll deduction.
+Sales commission
+Configurable by product/category/salesperson/target and returns adjustment.
+Karigar bill
+Piece, weight, operation or negotiated rate; linked to accepted production output.
+Payroll posting
+Expense, payable, deductions and payment voucher integration.
+Security
+HR/payroll data restricted separately from general employee data.
+17. Dashboards, Alerts and Reports
+Dashboard
+Key indicators
+Owner/management
+Today/MTD sales, collection, expense, gross margin, branch ranking, stock value, gold position, cash/bank, receivable/payable.
+Shop manager
+Sales, targets, orders due, stock availability, transfers, cashier status and pending approvals.
+Factory
+WIP by stage/karigar, gold outstanding, overdue work, recovery, variance, rejection and output.
+Finance
+Cash flow, bank/MFS, vouchers pending, receivable, payable, VAT/tax, P&L and close status.
+Procurement
+PR/PO pipeline, due deliveries, supplier performance, purchase value and stock need.
+Security/audit
+Failed logins, overrides, cancellations, back-dated entries, negative-stock attempts and large variances.
+Report family
+Minimum reports
+Sales
+Daily/period sales, item/category, branch, salesperson, margin, discount/override, return/exchange and payment mode
+Inventory
+Stock ledger, as-of balance, tag register, fine-gold position, stock value, aging, movement, transit and physical variance
+Production
+Work-order register, issue/return, karigar ledger, WIP aging, recovery, loss/gain, costing and QC
+Procurement
+PR, RFQ, quotation comparison, PO, GRN, invoice, supplier ledger, landed cost and return
+Orders
+Order pipeline, advance, due delivery, cancellation, final estimate variance and customer history
+Finance
+Day book, vouchers, GL, subledgers, trial balance, P&L, balance sheet, cash flow and branch profitability
+Compliance
+Tax invoice, VAT purchase/sales register, withholding and audit export
+Payroll
+Attendance, salary sheet, payslip, bank advice, commission, loan and payroll journal
+18. Roles, Permissions and Approval Matrix
+Role
+Typical access
+Restricted actions
+Owner/MD
+Consolidated dashboard, high-value approval, inquiry
+Operational entry normally disabled
+Administrator
+Tenant/configuration/user management
+Cannot approve own financial transaction
+Shop Manager
+Branch stock, sales, order, return and closing approval
+No other branch access unless assigned
+Cashier/Salesperson
+POS, customer, receipt, own counter
+No rate/master/stock adjustment
+Procurement Officer
+PR/RFQ/PO/GRN entry
+Approval and payment separated
+Factory Manager
+Work order, issue/receipt, QC oversight
+Variance approval per limit
+Karigar/Production Staff
+Assigned work acknowledgment/status/return
+No valuation or unrelated jobs
+Storekeeper
+Custody, transfer, issue/receipt and count
+No financial approval
+Accountant
+Vouchers, reconciliation, reports and close preparation
+Final close/reopen by approver
+HR/Payroll
+Employee, attendance, payroll
+No operational pricing/stock
+Auditor
+Read-only reports, audit log and export
+No create/edit/approve
+18.1 Approval Rules
+No user approves a transaction they created where maker-checker applies.
+Approval thresholds can depend on amount, weight, purity variance, discount, loss, back-date and branch.
+Rejection requires reason; resubmission increments revision.
+Approved/posted documents are immutable; cancel/reverse instead of delete.
+Delegation has start/end time, scope and audit trail.
+Urgent override requires elevated permission, reason and notification.
+19. End-to-End Workflows
+19.1 Purchase to Pay
+Shop/factory raises requisition.
+Approver checks need and budget.
+Procurement compares suppliers and issues PO.
+Store receives and quality-tests material.
+Finance matches invoice and posts payable.
+Payment is approved and allocated.
+Supplier ledger and inventory/accounting reconcile.
+19.2 Customer Order to Delivery
+Create customer/design quotation.
+Confirm order and collect advance.
+Create production work order or reserve stock.
+Issue materials; produce, recover and QC.
+Create finished tag and transfer to shop.
+Calculate final price from actuals and agreed policy.
+Apply advance/exchange credit, collect balance and deliver.
+19.3 Old Gold to Exchange Sale
+Intake and test old ornament.
+Approve valuation and create exchange credit.
+Select new ornament or order production.
+Invoice new product separately.
+Apply exchange credit and collect/pay difference.
+Move old gold to custody/melting and retain linked audit chain.
+19.4 Branch Transfer
+Request tagged/bulk stock.
+Source confirms and approver authorizes.
+Pick/scan, dispatch and create transit record.
+Destination scans and weighs receipt.
+Resolve discrepancy if any.
+Post receiving location stock and close transit.
+19.5 Day Closing
+Stop or suspend new cashier posting.
+Count cash and reconcile payment modes.
+Review invoice, return, exchange, expense and deposit totals.
+Record variance and obtain approval.
+Lock counter session; generate daily sales/cash/stock summary.
+Finance reconciles bank/MFS and branch remittance.
+20. Data Architecture and Database Blueprint
+20.1 Architectural Principles
+Relational database is the system of record; documents/images reside in object storage with metadata and checksum.
+All transactional tables include tenant/company, branch/location, status, created/updated by/time and version fields.
+Use UUID/large numeric surrogate keys internally and human-readable document numbers externally.
+Use database transactions, constraints, idempotency keys and row/version locking for financial/stock integrity.
+Ledger rows are append-only. Corrections use reversals and new entries.
+Timestamps are stored in UTC and displayed in Asia/Dhaka or configured timezone.
+20.2 Core Entity Groups
+Domain
+Principal tables
+Organization
+companies, branches, locations, stores, vaults, counters, fiscal_periods, document_sequences
+Identity
+employees, users, roles, permissions, user_roles, user_locations, approval_limits
+Partners
+customers, suppliers, karigars, partner_addresses, partner_identifiers, bank_accounts
+Catalog
+metals, purities, units, item_groups, items, designs, stones, product_tags, price_rules
+Rates
+metal_rates, metal_rate_lines, rate_approvals, exchange_rates
+Procurement
+purchase_requisitions, pr_lines, rfqs, quotations, purchase_orders, po_lines, grns, grn_lines, supplier_invoices
+Old gold
+old_gold_headers, old_gold_lines, purity_tests, deductions, exchange_credits, melting_lots
+Orders
+sales_orders, order_lines, order_specs, advances, reservations, customer_communications
+Production
+work_orders, work_operations, material_issues, material_returns, recoveries, production_receipts, qc_results, karigar_bills
+Inventory
+inventory_ledger, stock_balances, lots, serial_tags, transfers, transfer_lines, stock_counts, adjustments
+Sales
+pos_sessions, sales_invoices, sales_lines, returns, return_lines, payments, payment_allocations
+Finance
+chart_of_accounts, journals, journal_lines, subledger_entries, cost_centers, budgets, bank_reconciliations
+Tax
+tax_codes, tax_rates, tax_rules, tax_lines, tax_returns
+Payroll
+attendance, leave, salary_structures, payroll_runs, payroll_lines, loans, commissions
+Platform
+attachments, comments, notifications, outbox_events, audit_logs, integration_logs
+20.3 Key Table Specifications
+Table
+Critical fields / constraints
+metal_rates
+id, scope, source, effective_from/to, status; unique approved active range per scope/metal/purity
+items
+id, sku, type, group, metal/purity defaults, valuation/tax class, active; unique SKU per company
+product_tags
+tag_no, item_id, lot_id, weights, purity, location, status, cost; unique tag_no
+inventory_ledger
+txn_id/line, date, item/tag/lot, from/to location, qty/weights/value, source_type/id; append-only
+stock_balances
+dimension keys, qty/gross/net/fine/cost, version; unique composite dimension
+work_orders
+order/design, target attributes, assigned holder, status, tolerance, due date, version
+material_issues
+work_order, lot/tag, holder, gross/net/fine/value; cannot exceed available stock
+sales_invoices
+branch, session, customer, totals, rate snapshot, status, posted_journal_id
+sales_lines
+tag/item, component prices, tax, discount, cost and original reference
+journal_lines
+journal, account, party, cost center, debit, credit, currency; voucher debit=credit
+audit_logs
+actor, action, entity, before/after hash or JSON, device/IP, time; write-protected
+20.4 Relationship Summary
+Parent
+Relationship
+Child
+Company
+1:N
+Branches, users, masters, fiscal periods
+Branch
+1:N
+Locations, counters, documents
+Item
+1:N
+Lots and serialized product tags
+Sales order
+1:N
+Order lines, advances, work orders/reservations
+Work order
+1:N
+Issues, operations, returns, recoveries, receipts, QC
+Sales invoice
+1:N
+Lines, tax lines, payments/allocations
+Source transaction
+1:N
+Inventory ledger and journal entries
+Customer old-gold transaction
+1:N
+Lines, tests, exchange credits, melting allocation
+20.5 Ledger Integrity Invariants
+For every posted journal: total debit equals total credit by base currency.
+For each inventory movement: source decrease and destination increase reconcile where transfer is internal.
+A serialized tag can have only one current custody location/status.
+A sale cannot post for a non-available tag.
+A work-order fine-weight close variance must be within tolerance or approved.
+A payment allocation cannot exceed available payment or document outstanding.
+A closed fiscal period rejects posting unless formally reopened.
+21. API and Integration Specification
+21.1 API Standards
+REST/JSON APIs under /api/v1; OpenAPI specification is mandatory.
+OAuth2/OIDC or secure JWT access with short-lived access token and refresh rotation.
+Location and permission scope resolved server-side.
+POST commands accept Idempotency-Key; mutation responses include resource version.
+Pagination, filtering, sorting and consistent error schema.
+Money and decimal weights serialized as strings to avoid precision loss.
+Correlation ID across UI, API, database and integration logs.
+Method / endpoint
+Purpose
+Permission
+POST /auth/login
+Authenticate and establish session
+Public with throttling
+GET /metal-rates/effective
+Resolve effective price inputs
+Authenticated
+POST /sales-orders
+Create customer order
+order.create
+POST /old-gold-transactions
+Record intake/valuation draft
+oldgold.create
+POST /work-orders/{id}/issues
+Issue material to holder
+production.issue
+POST /inventory/transfers
+Create transfer request
+transfer.create
+POST /pos/sessions/{id}/invoices
+Post POS invoice atomically
+pos.sell
+POST /payments
+Record receipt/payment
+payment.create
+POST /documents/{id}/submit
+Submit workflow document
+document.submit
+POST /approvals/{id}/decision
+Approve/reject with reason
+document.approve
+GET /reports/stock-position
+As-of stock/fine-gold view
+report.stock
+GET /dashboards/management
+Consolidated KPIs
+dashboard.management
+21.2 Error Contract
+Field
+Example / rule
+code
+INV_INSUFFICIENT_STOCK
+message
+User-safe localized message
+details
+Field errors, required approval or available balance
+correlation_id
+Traceable support identifier
+retryable
+true only for safe transient failure
+21.3 Integrations
+Integration
+Method
+Controls
+Barcode/QR scanner
+Keyboard wedge or device API
+Whitelist formats; prevent duplicate scan
+Receipt/tag printer
+Browser print service or local agent
+Template/version and reprint audit
+Weighing scale
+Serial/USB/Bluetooth local connector where supported
+Capture device reading, manual override reason
+Attendance device
+Scheduled API/file import
+Duplicate prevention and reconciliation
+SMS/WhatsApp
+Approved provider API
+Consent, template, delivery log and retry
+Bank/MFS/card
+Gateway/API or statement import
+Idempotency, reconciliation and tokenized references
+Accounting export
+CSV/XLSX/API
+Balanced batches and export log
+Backup storage
+Encrypted object/database backup
+Retention, restore testing and access control
+22. User Experience and Channel Requirements
+Channel
+Requirements
+Desktop/laptop
+Full ERP navigation, keyboard efficiency, responsive tables and export/print.
+Tablet
+Touch-friendly POS, stock count, order capture and factory floor functions.
+Mobile
+Owner dashboard, approval inbox, search, order status, simple receipt/issue and alerts.
+PWA
+Installable, secure cache, upgrade notification and controlled offline capability.
+Accessibility
+Keyboard navigation, visible focus, labels, sufficient contrast, scalable text and error summaries.
+Localization
+English/Bangla labels, local date/number/BDT display and bilingual print templates.
+22.1 Primary Screens
+Area
+Screens
+Foundation
+Login/MFA, company/branch/location, user/role, approval matrix, document sequences
+Catalog/rates
+Item/product/tag, design, metal/purity, stone, pricing rules, daily rate approval
+Purchasing
+PR, RFQ, comparison, PO, GRN, invoice, return and supplier ledger
+Old gold
+Customer intake, purity test, valuation, approval, exchange credit, custody/melting
+Order/production
+Quotation, order, advance, work order, issue/return, stage board, recovery, QC, receipt
+Inventory
+Stock inquiry, tag trace, transfer, count, adjustment and valuation
+POS
+Cashier open, cart, price breakdown, tender, invoice, return, closing
+Finance/payroll
+Vouchers, allocations, reconciliation, ledgers, period close, payroll
+Management
+Dashboard, approval inbox, alerts and drill-down reports
+23. Non-Functional Requirements
+ID
+Category
+Requirement / target
+NFR-001
+Availability
+Target 99.5% monthly for hosted production, excluding agreed maintenance.
+NFR-002
+Performance
+95th percentile common reads <2 s and standard posts <3 s under agreed load; reports may run asynchronously.
+NFR-003
+Capacity
+Baseline 5 branches, 100 concurrent users, 1M+ ledger rows/year; validate growth during sizing.
+NFR-004
+Concurrency
+Prevent double sale, duplicate serial, overselling and conflicting approvals using atomic transactions/locking.
+NFR-005
+Security
+TLS, encryption at rest, RBAC, MFA option, secrets management, OWASP controls and dependency scanning.
+NFR-006
+Audit
+Log login, master change, approval, override, print/export, cancellation and configuration change.
+NFR-007
+Backup
+Defined RPO ≤15 minutes and RTO ≤4 hours target subject to hosting design; quarterly restore drill.
+NFR-008
+Retention
+Configurable by document class and regulatory/business policy; legal hold supported where required.
+NFR-009
+Privacy
+Data minimization, masking in lower environments, consent and authorized export.
+NFR-010
+Maintainability
+Modular services, coding standards, automated tests, migrations, observability and API documentation.
+NFR-011
+Compatibility
+Current major Chrome/Edge/Safari; responsive Android/iOS browsers and approved printers/scanners.
+NFR-012
+Localization
+No hard-coded UI strings, tax rates, units, currencies or document formats.
+24. Security, Audit and Fraud Controls
+Least privilege and explicit deny by default.
+MFA mandatory for administrators, finance approvers and remote access where supported.
+Strong password policy or enterprise identity provider; rate-limited login.
+Server-side input validation, parameterized queries, CSRF/XSS/SSRF protections and secure headers.
+Sensitive identifiers encrypted or masked according to classification.
+No production data in development/test without approved anonymization.
+Audit logs separated from ordinary application update rights.
+Alerts for excessive discount, price override, abnormal old-gold purity/value, negative-stock attempt, high production loss, repeated void/reprint and back-dated entry.
+Quarterly access review and immediate deactivation on employee separation.
+Signed release artifacts, controlled CI/CD and production change approval.
+24.1 Audit Record
+Field group
+Required content
+Who
+User, employee, role and impersonation/delegation context
+What
+Action, entity type/id, document number and before/after values or hash
+When
+UTC timestamp plus displayed business time
+Where
+Company, branch/location, device/session and IP where appropriate
+Why
+Reason for override, rejection, cancellation, reversal or reopen
+Result
+Succeeded/failed and correlation ID
+25. Recommended Technical Architecture
+Reference architecture
+Responsive React/TypeScript PWA → API gateway/backend services → PostgreSQL relational database → Redis cache/queue → object storage for documents/images → reporting/BI layer. Equivalent enterprise technology may be selected if it preserves the requirements and invariants.
+Layer
+Recommendation
+Frontend
+React + TypeScript, component library, responsive PWA, form/query state management, localization.
+Backend
+Modular monolith initially for SME cost/control; domain modules with clean boundaries and transactional outbox.
+Database
+PostgreSQL 16+; DECIMAL types, constraints, indexes, partition large ledgers as required, PITR backups.
+Async
+Queue for notifications, report generation, integration retry and non-critical projections.
+Files
+S3-compatible encrypted object storage; checksum, malware scan and metadata in DB.
+Reporting
+Read-optimized views/materialized views; operational reports separated from heavy analytics.
+Observability
+Structured logs, metrics, traces, health checks, audit dashboard and alerting.
+Deployment
+Containerized environments: dev, test, staging/UAT, production; automated migrations and rollback plan.
+25.1 Module Boundaries
+Module
+Owns
+Publishes events
+Identity & Organization
+users, roles, locations, approvals
+UserChanged, LocationChanged
+Catalog & Pricing
+items, tags, rates, pricing rules
+RateApproved, ItemChanged
+Procurement
+PR through supplier invoice
+GoodsReceived, SupplierInvoicePosted
+Order & Production
+orders, WIP, karigar accountability
+OrderConfirmed, ProductionCompleted
+Inventory
+ledger, balances, transfers, counts
+StockMoved, StockAdjusted
+Sales & POS
+sessions, invoice, return
+SalePosted, SaleReversed
+Finance
+journals, subledgers, periods
+JournalPosted, PeriodClosed
+HR & Payroll
+attendance, salary, commission
+PayrollPosted
+Notification & Reporting
+outbox, templates, projections
+DeliveryStatus, ReportReady
+26. Data Migration and Opening Balance
+Inventory current sources and assign data owner.
+Clean company, branch, item, customer, supplier, employee and account masters.
+Define unique product tags and resolve duplicates.
+Load master data into staging; validate mandatory fields and referential integrity.
+Load opening raw material, WIP, finished tags, customer/supplier/karigar balances, cash/bank and GL balances.
+Run weight/value/ledger reconciliation and obtain signed approval.
+Perform at least two mock migrations.
+Freeze legacy entries, execute final delta, verify control totals and activate users.
+Control total
+Must reconcile
+Fine-gold stock
+Legacy certified physical stock vs. ERP by location/purity/status
+Serialized ornaments
+Tag count, gross/net/fine weight and valuation
+Open production
+Gold outstanding by work order/karigar and WIP cost
+Receivables/payables
+Party-wise aging equals control accounts
+Cash/bank/MFS
+Closing statement/balance and GL
+Trial balance
+Total debit equals credit and signed closing TB
+27. Testing Strategy and Acceptance
+Test level
+Coverage
+Unit
+Formula, rounding, permission, state transition and posting rule tests.
+Integration
+Database constraints, API, event/outbox, printer/scale/provider adapters.
+End-to-end
+Procure, produce, transfer, sell, exchange, return, close and account.
+Concurrency
+Same tag double sale, same lot issue, duplicate payment callback and serial queue.
+Security
+RBAC bypass, OWASP tests, session/MFA, export, audit tamper and dependency scan.
+Performance
+POS peak, management dashboard, stock as-of and ledger posting.
+Recovery
+Backup restore, failed deployment rollback, queue replay and provider outage.
+UAT
+Role-based scripts with real sample rates, weights, tags, branches and accounting reconciliation.
+27.1 Critical Acceptance Scenarios
+ID
+Scenario
+Pass criteria
+AT-01
+Sell a tagged ornament
+Correct rate/components/tax; tag leaves stock once; balanced voucher and payment.
+AT-02
+Two cashiers scan same tag
+Only one can post; loser receives clear stock conflict.
+AT-03
+Old-gold exchange
+Test/deductions/value approved; credit applied separately; complete custody and accounting trail.
+AT-04
+Customer order with final weight change
+Advance and agreed pricing policy applied; final balance correct.
+AT-05
+Karigar reconciliation
+Issue, return, recovery, finished output and loss reconcile to fine weight.
+AT-06
+Branch transfer shortage
+Transit discrepancy recorded and approval resolves stock/accounting.
+AT-07
+Return after metal-rate change
+Configured original/current-rate rule applied and approved.
+AT-08
+Period closed
+Backdated post rejected; authorized reopen logged.
+AT-09
+Rate supersession
+Earlier invoices unchanged; new transactions use new effective rate.
+AT-10
+Backup restore
+Control counts and balances match at recovery point.
+28. DevOps, Environments and Operations
+Environment
+Purpose
+Data policy
+Development
+Developer build and unit tests
+Synthetic only
+Test/QA
+Integration, regression and performance samples
+Synthetic/anonymized
+Staging/UAT
+Business validation and release candidate
+Controlled masked or approved UAT data
+Production
+Live operations
+Strict access, monitoring, backup and audit
+DR
+Recovery capability
+Encrypted replicated/backup data, tested procedure
+CI gates: lint, type check, unit/integration tests, SAST, dependency scan, migration test and build signing.
+Database migrations are versioned, backward-compatible where possible and tested against production-like volume.
+Feature flags control high-risk rollout; configuration changes are audited.
+Runbooks cover incident, backup/restore, failed payment, stuck integration, rate correction and emergency access.
+Monitoring covers API latency/error, DB health, queue lag, storage, failed jobs, login anomalies and business reconciliation alerts.
+29. Implementation Roadmap and Deliverables
+Phase
+Indicative scope
+Exit criteria
+0. Discovery & design
+Process workshops, compliance decisions, prototypes, backlog, architecture and migration assessment.
+Signed scope, rules, UX and delivery plan.
+1. Foundation
+Organization, identity, masters, rates, catalog and approval framework.
+Master setup and security UAT.
+2. Procurement & inventory
+Purchase, GRN, old gold, lots/tags, stock ledger, transfers and counts.
+Opening/movement reconciliation passes.
+3. Orders & production
+Order, advance, work order, issue/return/recovery, QC, karigar and costing.
+Fine-gold reconciliation passes.
+4. POS & payments
+POS, tender, invoice, return/exchange, cashier close and devices.
+End-to-end branch sales UAT.
+5. Finance, tax & payroll
+Vouchers, subledgers, statements, VAT/tax config, attendance/payroll.
+Trial balance and statutory report validation.
+6. Analytics & rollout
+Dashboards, reports, migration, training, pilot, DR and production rollout.
+Pilot acceptance and signed go-live checklist.
+29.1 Project Deliverables
+Approved BRD/SRS and traceability matrix.
+UX wireframes/prototype and responsive design system.
+Solution architecture, data model, OpenAPI and security design.
+Source code, database migrations, automated tests and CI/CD configuration.
+Configured reports, print templates and integration adapters.
+Migration tools/templates and reconciliation reports.
+Administrator, user and technical manuals; training materials.
+Deployment, backup/restore, monitoring and incident runbooks.
+UAT evidence, release notes, warranty/support handover and source-code handover as contracted.
+29.2 Indicative Team
+Role
+Indicative involvement
+Product owner/business analyst
+Full discovery, decisions and UAT
+Solution architect/technical lead
+Architecture, critical design and review
+Frontend developers
+Responsive ERP/POS/PWA
+Backend developers
+Domain APIs, ledgers, workflow and integration
+QA automation/manual
+Traceability, regression, performance and security coordination
+UI/UX designer
+Research, flows, prototype and design system
+DevOps/DBA
+CI/CD, database, security, monitoring and DR
+Jewelry/finance SME
+Purity, production, valuation, VAT/tax and accounting validation
+30. Definition of Done
+Acceptance criteria implemented and linked to tests.
+Code reviewed and static/security checks pass.
+Database migration has forward and rollback/recovery plan.
+Permissions and audit events verified.
+Accounting and inventory effects reconciled.
+Responsive behavior and supported devices/browsers tested.
+API/OpenAPI, configuration and user documentation updated.
+Monitoring/logging added without sensitive-data leakage.
+No unresolved critical/high defect; approved exceptions documented.
+Product owner accepts in target environment.
+31. Risks and Mitigations
+Risk
+Impact
+Mitigation
+Unclear purity/wastage practices
+Incorrect stock and customer value
+Discovery samples, formula catalogue, configurable rules and signed scenarios
+Regulatory change
+Non-compliant invoices/registers
+Effective-dated tax configuration and pre-go-live adviser validation
+Poor opening data
+Untrusted ERP
+Mock migration, physical count and signed reconciliation
+Unauthorized discount/stock change
+Fraud/margin leakage
+RBAC, thresholds, maker-checker, alerts and immutable audit
+Internet/device instability
+Interrupted POS
+Resilient design, tested hardware, local fallback policy and support runbook
+Concurrency defect
+Double sale/negative gold
+Atomic posting, unique constraints, locks and stress tests
+Scope expansion
+Delay/cost overrun
+Baseline, change control, phased MVP and prioritized backlog
+User resistance
+Parallel manual systems
+Pilot branch, role training, champions and daily reconciliation
+32. Open Decisions for Discovery
+ID
+Decision needed
+Owner
+D-01
+Exact BAJUS/authorized rate source, unit, update timing and branch override policy
+Sponsor
+D-02
+Pricing formula and rounding by product category; return/exchange policy
+Sales/Finance
+D-03
+Allowed purity-test methods, deductions, KYC/declaration and approval thresholds
+Operations/Legal
+D-04
+Production loss/recovery tolerance by operation and karigar settlement rules
+Factory
+D-05
+Financial valuation method and revaluation treatment
+Finance
+D-06
+Current NBR VAT/tax, invoice, Mushak/fiscal-device and retention requirements
+Tax adviser
+D-07
+Offline POS requirement and maximum offline value/time
+Sponsor/Technology
+D-08
+Hosting model, RPO/RTO, data residency and support hours
+Technology
+D-09
+Hardware models for scales, scanners, label and receipt printers
+Operations
+D-10
+Legacy sources, opening date, migration volume and cutover approach
+Project manager
+Appendix A. Requirement Status Model
+Document
+Typical states
+Rate/master change
+Draft → Submitted → Approved → Active → Superseded/Inactive
+Purchase requisition
+Draft → Submitted → Approved/Rejected → Converted → Closed
+Purchase order
+Draft → Approved → Part Received → Received → Closed/Cancelled
+Customer order
+Draft → Quoted → Confirmed → In Production/Reserved → Ready → Delivered/Cancelled
+Work order
+Planned → Released → In Progress → QC/Rework → Completed → Closed
+Transfer
+Draft → Approved → Dispatched → In Transit → Received/Disputed → Closed
+Sales invoice
+Draft/Held → Posted → Part Returned/Returned → Reversed
+Voucher
+Draft → Submitted → Approved → Posted → Reversed
+Payroll
+Draft → Calculated → Reviewed → Approved → Posted → Paid
+Appendix B. Priority Backlog (MVP)
+Priority
+Capability
+Must
+Organization/security, catalog/rates, serialized and weight-based inventory, POS, order/advance, old-gold exchange, production/karigar reconciliation, transfers, cash close, operational accounting and essential reports.
+Should
+Procurement comparison/import landed cost, attendance/payroll, notifications, owner mobile approval/dashboard and advanced analytics.
+Could
+Loyalty, e-commerce, appointment, AI demand forecast, image-based design search, customer app and advanced BI.
+Won’t in initial release
+Refinery automation, unapproved government e-filing, full marketplace and bank core integration.
+Appendix C. Glossary
+Term
+Meaning
+BAJUS
+Bangladesh Jeweller’s Association; a potential authorized reference for market rates subject to client policy.
+Karat (K)
+Purity measure where 24K is theoretically pure gold.
+Fineness
+Purity expressed per thousand, e.g., 916.
+Fine gold
+Pure-gold equivalent after applying purity to metal weight.
+Gross weight
+Total ornament weight including stone and other materials.
+Net metal weight
+Gold/silver weight after configured deductions.
+Making charge
+Labor/value charge for producing or finishing an ornament.
+Wastage/value addition
+Configured charge or material allowance; distinct from actual production loss.
+Karigar
+Artisan or production worker, internal or external, accountable for issued material.
+WIP
+Work in process: material or ornaments currently under production.
+GRN
+Goods Receipt Note.
+MFS
+Mobile Financial Service.
+PWA
+Progressive Web Application.
+RPO/RTO
+Maximum targeted data-loss period / recovery time objective.
+Appendix D. Sample Traceability Matrix
+Business goal
+Requirement IDs
+Primary tests
+Prevent untraceable gold movement
+INV-001–008, PRD-002–008
+AT-02, AT-05, AT-06
+Accurate customer pricing
+RATE-001–005, PRICE-001–003, POS-001–005
+AT-01, AT-07, AT-09
+Controlled old-gold exchange
+OG-001–008
+AT-03
+Reliable accounting
+ACC-001–010
+AT-01, AT-03, AT-08
+Secure multi-branch operation
+ORG-001–002, SEC-001–003, NFR-005–009
+Role/security suite
+Recoverable service
+NFR-001–004, NFR-007
+AT-10
+Appendix E. Final Validation Checklist
+Every weight and price formula is demonstrated using client-approved examples.
+Each role is tested at an assigned and unassigned branch.
+Every posting rule balances and drills to its source.
+Opening stock and balances are signed off.
+All supported printers, scanners and scales pass pilot tests.
+UAT includes at least one complete old-gold exchange and one custom-order production cycle.
+Backup restore and production rollback are demonstrated.
+Tax adviser signs off configured VAT/tax/invoice outputs.
+Training, support contacts, SLA and warranty start conditions are documented.
+Go-live approval records remaining risks and owners.

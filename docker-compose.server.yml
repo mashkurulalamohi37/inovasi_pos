@@ -1,0 +1,125 @@
+# omni-pos-core — ideaapi server deployment
+# Matches the port pattern on 118.179.223.42:
+#   Frontend  → host port 3008  (same as old pulse-pos)
+#   Backend   → host port 9100  (same as old pulse-pos)
+#   Postgres  → host port 5540  (same as old pulse-pos)
+#   Redis     → kept internal   (no host binding, password-protected)
+#
+# Usage (on server):
+#   docker compose -f docker-compose.server.yml up -d --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulse123_secure_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-pulse_pos}
+    ports:
+      - "5540:5432"
+    volumes:
+      - pulse_pg_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulse} -d ${POSTGRES_DB:-pulse_pos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulse_internal
+
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:-redis123_secure_pw}
+    volumes:
+      - pulse_redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis123_secure_pw}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulse_internal
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-pulse}:${POSTGRES_PASSWORD:-pulse123_secure_pw}@postgres:5432/${POSTGRES_DB:-pulse_pos}
+      SECRET_KEY: ${SECRET_KEY:-e184f88e40428a1789c09c959738d10b784e1bfae67406a44549f056461a29de}
+      JWT_REFRESH_SECRET_KEY: ${JWT_REFRESH_SECRET_KEY:-5b991b151e2bc689539d91f13b6cb46f04172f3eef46c2688b56e6d1945f479d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://118.179.223.42:3008}
+      ENVIRONMENT: production
+      SEED_ON_STARTUP: ${SEED_ON_STARTUP:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      BACKUP_PATH: ${BACKUP_PATH:-/var/backups/pulse}
+      LOGIN_MAX_ATTEMPTS: ${LOGIN_MAX_ATTEMPTS:-5}
+      LOGIN_LOCKOUT_MINUTES: ${LOGIN_LOCKOUT_MINUTES:-30}
+      ALLOW_PUBLIC_ONBOARDING: ${ALLOW_PUBLIC_ONBOARDING:-true}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-private}
+      RATE_LIMIT_BACKEND: redis
+      RATE_LIMIT_REQUIRE_REDIS: "true"
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis123_secure_pw}@redis:6379/0
+      CACHE_BACKEND: redis
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-60}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    volumes:
+      - pulse_uploads:/app/uploads
+    ports:
+      - "9100:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - pulse_internal
+
+  pulse-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://118.179.223.42:9100/api/v1}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    ports:
+      - "3008:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - pulse_internal
+
+volumes:
+  pulse_pg_data:
+  pulse_redis_data:
+  pulse_uploads:
+
+networks:
+  pulse_internal:
+    driver: bridge

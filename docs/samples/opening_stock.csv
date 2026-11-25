@@ -1,0 +1,5 @@
+sku,store_code,warehouse_code,qty,unit_cost,variant_sku,size,color,notes
+GROC-001,DHK-01,WH-DHK-01,100,800,,,,Opening balance pilot
+PHRM-001,DHK-01,WH-DHK-01,500,10,,,,Opening balance pilot
+FASH-001,DHK-01,WH-DHK-01,12,900,FASH-001-S-BLU,,,Fashion opening via variant_sku
+FASH-001,DHK-01,WH-DHK-01,8,900,,M,Black,Fashion opening via size+color

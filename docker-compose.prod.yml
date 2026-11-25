@@ -1,0 +1,199 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-pulse_pos}
+    volumes:
+      - pulse_pg_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulse} -d ${POSTGRES_DB:-pulse_pos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulse_internal
+
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    volumes:
+      - pulse_redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulse_internal
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-pulse}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-pulse_pos}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
+      JWT_REFRESH_SECRET_KEY: ${JWT_REFRESH_SECRET_KEY:?Set JWT_REFRESH_SECRET_KEY in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://app.example.com}
+      ENVIRONMENT: production
+      SEED_ON_STARTUP: ${SEED_ON_STARTUP:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      BACKUP_PATH: ${BACKUP_PATH:-/var/backups/pulse}
+      LOGIN_MAX_ATTEMPTS: ${LOGIN_MAX_ATTEMPTS:-5}
+      LOGIN_LOCKOUT_MINUTES: ${LOGIN_LOCKOUT_MINUTES:-30}
+      ALLOW_PUBLIC_ONBOARDING: ${ALLOW_PUBLIC_ONBOARDING:-false}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      RATE_LIMIT_BACKEND: redis
+      RATE_LIMIT_REQUIRE_REDIS: "true"
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CACHE_BACKEND: redis
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-60}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    # Product/menu photos and profile pictures are written here at runtime.
+    # Without a volume they live in the container layer and every rebuild wipes
+    # them, leaving the POS full of broken image placeholders.
+    volumes:
+      - pulse_uploads:/app/uploads
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - pulse_internal
+
+  pulse-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in .env}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: always
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - pulse_internal
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      backend:
+        condition: service_healthy
+      pulse-pos:
+        condition: service_healthy
+    restart: always
+    networks:
+      - pulse_internal
+
+  db-backup:
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:-pulse}
+      PGDATABASE: ${POSTGRES_DB:-pulse_pos}
+      BACKUP_ENCRYPTION_PASSPHRASE: ${BACKUP_ENCRYPTION_PASSPHRASE:?Set BACKUP_ENCRYPTION_PASSPHRASE in .env}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      sh -c "
+        apk add --no-cache gnupg >/dev/null;
+        while true; do
+          FILENAME=/backups/pulse_$$(date +%Y%m%d_%H%M%S).sql.gz.gpg;
+          pg_dump -h $$PGHOST -U $$PGUSER $$PGDATABASE \
+            | gzip \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 \
+                  --passphrase \"$$BACKUP_ENCRYPTION_PASSPHRASE\" \
+                  --output $$FILENAME;
+          echo \"Encrypted backup written: $$FILENAME\";
+          find /backups -name '*.sql.gz.gpg' -mtime +7 -delete;
+          sleep 86400;
+        done
+      "
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pulse_internal
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - pulse_prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+    restart: always
+    expose:
+      - "9090"
+    networks:
+      - pulse_internal
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - pulse_grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    restart: always
+    ports:
+      # Bound to loopback only — Grafana is not proxied through nginx/TLS, so it
+      # must not be reachable from the internet. Reach it via SSH tunnel or VPN.
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - pulse_internal
+
+volumes:
+  pulse_pg_data:
+  pulse_redis_data:
+  pulse_uploads:
+  pulse_prometheus_data:
+  pulse_grafana_data:
+
+networks:
+  pulse_internal:
+    driver: bridge

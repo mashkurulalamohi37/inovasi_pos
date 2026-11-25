@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulse123_secure_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-pulse_pos}
+    ports:
+      # Host 5540: avoids local Windows PostgreSQL on 5432 AND Hyper-V
+      # excluded range 5433-5532 ("bind: access permissions" on Windows).
+      - "5540:5432"
+    volumes:
+      - pulse_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulse} -d ${POSTGRES_DB:-pulse_pos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      # Host 9100: Hyper-V exclusions shift; 9001 fell into 8937–9036 on this machine.
+      - "9100:8000"
+    volumes:
+      - pulse_uploads:/app/uploads
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://${POSTGRES_USER:-pulse}:${POSTGRES_PASSWORD:-pulse123_secure_pw}@postgres:5432/${POSTGRES_DB:-pulse_pos}}
+      SECRET_KEY: dev-secret-change-in-production-min-32-chars!!
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:3008,http://127.0.0.1:3008,http://118.179.223.42:3008,http://pulse-pos:3000}
+      ENVIRONMENT: development
+      LOG_LEVEL: info
+      SEED_ON_STARTUP: "true"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      LOGIN_MAX_ATTEMPTS: "5"
+      LOGIN_LOCKOUT_MINUTES: "15"
+      RATE_LIMIT_BACKEND: redis
+      REDIS_URL: redis://redis:6379/0
+      RATE_LIMIT_ENABLED: "true"
+      CACHE_ENABLED: "true"
+      CACHE_BACKEND: redis
+      CACHE_TTL_SECONDS: "60"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+
+  pulse-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:9100/api/v1
+    ports:
+      - "3008:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  pulse_pg_data:
+  pulse_uploads:

@@ -1,0 +1,13 @@
+node_modules
+dist
+.output
+.vinxi
+.tanstack
+pnpm-lock.yaml
+package-lock.json
+bun.lock
+routeTree.gen.ts
+playwright-report
+test-results
+# Vendored reference copy of another project — not code we ship.
+_ref-saas-portable

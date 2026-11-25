@@ -1,0 +1,70 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Environment & secrets
+.env
+.env.local
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.db
+backend/pulse_local.db
+
+# Backups / load artifacts
+backups/
+backups-offhost/
+scripts/load/results_*.json
+
+# Nginx — TLS certs and access logs must never be committed
+nginx/certs/
+nginx/logs/
+
+test-results/
+playwright-report/
+
+# Logs
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Runtime tenant uploads — mounted as the pulse_uploads Docker volume, not source.
+backend/uploads/
+uploads/profile_pics/
+# Local artifacts
+*.db.bak-*
+pulse-pos-deploy.tar.gz
+*.tar.gz
+omni-pos-core-deploy.tar.gz
+scratch/
+issue.*
+*.mp4
+*.ogg
+*.wav
+
